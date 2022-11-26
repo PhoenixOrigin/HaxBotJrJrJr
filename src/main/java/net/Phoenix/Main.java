@@ -1,6 +1,6 @@
 package net.Phoenix;
 
-import net.Phoenix.events.EventHandler;
+import net.Phoenix.events.EventListener;
 import net.Phoenix.handlers.ConfigHandler;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -31,7 +31,7 @@ public class Main {
         jda = builder.build();
 
         // Registering the event handler
-        jda.addEventListener(new EventHandler());
+        jda.addEventListener(new EventListener());
 
         // Adding /sp command
         jda.upsertCommand("sp", "Lists all the available soul points")

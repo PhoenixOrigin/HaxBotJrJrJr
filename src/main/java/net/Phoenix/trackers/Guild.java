@@ -11,7 +11,8 @@ public class Guild {
     }
 
     public static void trackUsers(){
-        if (!ConfigHandler.getConfigBool("guild_rank")) return;
+        if (!ConfigHandler.getConfigBool("guild_rank")) {
+        }
     }
 
 
