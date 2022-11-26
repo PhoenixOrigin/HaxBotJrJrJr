@@ -363,9 +363,9 @@ public class Player {
 
             public static class PlayerLocation {
                 private final boolean online;
-                private final boolean server;
+                private final String server;
 
-                public PlayerLocation(boolean online, boolean server) {
+                public PlayerLocation(boolean online, String server) {
                     this.online = online;
                     this.server = server;
                 }
@@ -374,7 +374,7 @@ public class Player {
                     return online;
                 }
 
-                public boolean isServer() {
+                public String isServer() {
                     return server;
                 }
             }
@@ -383,7 +383,7 @@ public class Player {
 
     }
 
-    public static void deserialize(String json){
+    public static Player deserialize(String json){
         JsonObject object = JsonParser.parseString(json).getAsJsonObject();
         String kind = object.get("kind").getAsString();
         int code = object.get("code").getAsInt();
@@ -400,25 +400,37 @@ public class Player {
         PlayerData.PlayerMeta.PlayerLocation playerLocation = new PlayerData.PlayerMeta.PlayerLocation(location.get("online").getAsBoolean(), location.get("server").getAsString());
         long playtime = (long) (meta.get("playtime").getAsLong() * 4.7);
         JsonObject playerTag = meta.get("tag").getAsJsonObject();
-        PlayerData.PlayerMeta.PlayerTag tag = new PlayerData.PlayerMeta.PlayerTag(playerTag.get("display").getAsBoolean(), PlayerData.PlayerMeta.PlayerTag.PlayerRank.valueOf(playerTag.get("value")));
+        PlayerData.PlayerMeta.PlayerTag tag = new PlayerData.PlayerMeta.PlayerTag(playerTag.get("display").getAsBoolean(), PlayerData.PlayerMeta.PlayerTag.PlayerRank.valueOf(playerTag.get("value").getAsString()));
         PlayerData.PlayerMeta playerMeta = new PlayerData.PlayerMeta(firstJoin, lastSeen, playerLocation, playtime, tag, meta.get("veteran").getAsBoolean());
         List<PlayerData.PlayerClass> playerClasses = new ArrayList<>();
         for(Map.Entry<String, JsonElement> classInLoop : playerData.get("characters").getAsJsonObject().entrySet()){
             JsonObject playerClass = classInLoop.getValue().getAsJsonObject();
-            PlayerData.PlayerClass.PlayerClassType type = PlayerData.PlayerClass.PlayerClassType.valueOf(playerClass.get("type").getAsString()0;
+            PlayerData.PlayerClass.PlayerClassType type = PlayerData.PlayerClass.PlayerClassType.valueOf(playerClass.get("type").getAsString());
             int totalLevel = playerClass.get("level").getAsInt();
             PlayerData.PlayerClass.PlayerClassPVP pvp = new PlayerData.PlayerClass.PlayerClassPVP(playerClass.get("pvp").getAsJsonObject().get("kills").getAsInt(), playerClass.get("pvp").getAsJsonObject().get("deaths").getAsInt());
             long blocksWalked = playerClass.get("blocksWalked").getAsLong();
             int logins = playerClass.get("logins").getAsInt();
             int deaths = playerClass.get("deaths").getAsInt();
             int classPlaytime = (int) (playerClass.get("playtime").getAsInt() * 4.7);
-            this.playerClassSkills = playerClassSkills;
-            this.professions = professions;
-            this.discoveries = discoveries;
-            this.eventsWon = eventsWon;
-            this.preEconomyUpdate = preEconomyUpdate;
-            PlayerData.PlayerClass theclass = new PlayerData.PlayerClass()
+            JsonObject skills = playerClass.get("skills").getAsJsonObject();
+            int strength = skills.get("strength").getAsInt();
+            int dexterity = skills.get("dexterity").getAsInt();
+            int intelligence = skills.get("intelligence").getAsInt();
+            int defense = skills.get("defense").getAsInt();
+            int agility = skills.get("agility").getAsInt();
+            PlayerData.PlayerClass.PlayerClassSkills classSkills = new PlayerData.PlayerClass.PlayerClassSkills(strength, dexterity, intelligence, defense, agility);
+            List<PlayerData.PlayerClass.PlayerClassProfessions.PlayerClassProfession> professions = new ArrayList<>();
+            for(Map.Entry<String, JsonElement> prof : playerClass.get("professions").getAsJsonObject().entrySet()){
+                PlayerData.PlayerClass.PlayerClassProfessions.PlayerClassProfession profession = new PlayerData.PlayerClass.PlayerClassProfessions.PlayerClassProfession(prof.getKey(), prof.getValue().getAsJsonObject().get("level").getAsInt(), prof.getValue().getAsJsonObject().get("xp").getAsFloat());
+                professions.add(profession);
+            }
+            PlayerData.PlayerClass.PlayerClassProfessions profess = new PlayerData.PlayerClass.PlayerClassProfessions(professions);
+            int discoveries = playerClass.get("discoveries").getAsInt();
+            int eventsWon = playerClass.get("eventsWon").getAsInt();
+            boolean preEconomyUpdate = playerClass.get("preEconomyUpdate").getAsBoolean();
+            PlayerData.PlayerClass theclass = new PlayerData.PlayerClass(type, totalLevel, pvp, blocksWalked, logins, deaths, classPlaytime, classSkills, profess, discoveries, eventsWon, preEconomyUpdate);
         }
         PlayerData data = new PlayerData(username, uuid, rank, playerMeta, playerClasses);
+        return new Player(kind, code, timestamp, version, data);
     }
 }
