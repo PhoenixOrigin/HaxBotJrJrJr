@@ -1,8 +1,8 @@
-package net.Phoenix.features;
+package net.Phoenix.features.commands;
 
-import net.Phoenix.handlers.ConfigHandler;
 import net.Phoenix.api.AthenaAPI;
 import net.Phoenix.api.objects.ServerList;
+import net.Phoenix.handlers.ConfigHandler;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 
@@ -12,17 +12,17 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-public class SoulPointCommandFeature {
+public class SoulPointCommand {
 
-    public static void handleEvent(SlashCommandInteractionEvent event){
+    public static void handleEvent(SlashCommandInteractionEvent event) {
         // Creating a map that keeps order
         LinkedHashMap<ServerList.Server, Long> serverSoulPoints = new LinkedHashMap<>();
         // Querying wynntils athena api to get online servers
         ServerList serverList = AthenaAPI.getAvailableServers();
         // Looping through and adding soul point times to map
-        for(ServerList.Server server : serverList.getServers()){
+        for (ServerList.Server server : serverList.getServers()) {
             // Remove it if you don't want YT server to be excluded
-            if(Objects.equals(server.getServer(), "YT")){
+            if (Objects.equals(server.getServer(), "YT")) {
                 continue;
             }
             // If offset parameter there, use it else no offset
@@ -53,7 +53,7 @@ public class SoulPointCommandFeature {
         // Initialising stringBuilder
         StringBuilder sb = new StringBuilder("```\n");
         // Adding servers
-        for(Map.Entry<ServerList.Server, Long> e : serverSoulPoints.entrySet()){
+        for (Map.Entry<ServerList.Server, Long> e : serverSoulPoints.entrySet()) {
             sb.append(String.format("World %s: %sminutes\n", e.getKey().getServer(), e.getValue().toString()));
         }
         // Closing block

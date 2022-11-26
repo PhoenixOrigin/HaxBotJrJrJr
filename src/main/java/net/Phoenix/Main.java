@@ -16,7 +16,7 @@ public class Main {
         // Initilise ConfigHandler
         ConfigHandler.init();
         // No point runing bot if all features disabled
-        if(ConfigHandler.getConfigBool("disable_all")) return;
+        if (ConfigHandler.getConfigBool("disable_all")) return;
 
         // Creating a builder
         JDABuilder builder = JDABuilder.createDefault(ConfigHandler.getConfigString("token"));
@@ -39,7 +39,11 @@ public class Main {
                 .addOption(OptionType.INTEGER, "count", "How many worlds do you want to see", false)
                 .queue();
 
-
+        // Adding /feature command
+        jda.upsertCommand("feature", "Toggle a certain feature")
+                .addOption(OptionType.STRING, "feature", "The name of the feature you would like to toggle", true, true)
+                .addOption(OptionType.BOOLEAN, "enabled", "Whether to enable or disable the feature", true)
+                .queue();
     }
 
 }

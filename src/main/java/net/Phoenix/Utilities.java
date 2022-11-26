@@ -18,9 +18,10 @@ public class Utilities {
 
     /**
      * Prints error to a specific JDA discord server
+     *
      * @param exception The exception you need to print
      * @param channelId The id of the channel you want to print this to
-     * @param guild The server which the channel is in
+     * @param guild     The server which the channel is in
      */
     public static void printError(Throwable exception, long channelId, Guild guild) {
         // Getting error channel
@@ -44,12 +45,13 @@ public class Utilities {
 
     /**
      * Draws text in a box centered.
-     * @param g The graphics of the image you want to overlay the text on
-     * @param text The text to be overlayed
+     *
+     * @param g         The graphics of the image you want to overlay the text on
+     * @param text      The text to be overlayed
      * @param lineWidth Max line text width
-     * @param topX Box top x
-     * @param topY Box top y
-     * @param bottomY Height of box
+     * @param topX      Box top x
+     * @param topY      Box top y
+     * @param bottomY   Height of box
      */
     public static void drawCenteredString(Graphics g, String text, int lineWidth, int topX, int topY, int bottomY) {
         // Getting Font Metrics

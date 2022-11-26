@@ -5,12 +5,11 @@ import net.Phoenix.handlers.ConfigHandler;
 public class Guild {
 
 
-
-    public static void queueTrackers(){
+    public static void queueTrackers() {
 
     }
 
-    public static void trackUsers(){
+    public static void trackUsers() {
         if (!ConfigHandler.getConfigBool("guild_rank")) {
         }
     }

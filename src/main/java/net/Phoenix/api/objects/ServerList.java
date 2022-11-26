@@ -17,11 +17,6 @@ public class ServerList {
         this.servers = servers;
     }
 
-    public List<Server> getServers() {
-        // Simple getter
-        return servers;
-    }
-
     public static ServerList deserialize(String response) {
         // Parse JSON  into this
         JsonObject jsonObject = JsonParser.parseString(response).getAsJsonObject();
@@ -41,6 +36,11 @@ public class ServerList {
         }
         // Creating new class of this and returning
         return new ServerList(serverList);
+    }
+
+    public List<Server> getServers() {
+        // Simple getter
+        return servers;
     }
 
     public static class Server {

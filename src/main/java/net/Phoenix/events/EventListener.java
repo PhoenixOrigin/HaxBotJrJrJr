@@ -1,11 +1,12 @@
 package net.Phoenix.events;
 
+import net.Phoenix.handlers.CommandAutoCompleteHandler;
 import net.Phoenix.handlers.DiscordJoinHandler;
 import net.Phoenix.handlers.SlashCommandHandler;
 import net.dv8tion.jda.api.events.GenericEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
+import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.events.interaction.command.UserContextInteractionEvent;
 import org.jetbrains.annotations.NotNull;
 
 public class EventListener implements net.dv8tion.jda.api.hooks.EventListener {
@@ -18,7 +19,9 @@ public class EventListener implements net.dv8tion.jda.api.hooks.EventListener {
         if (event instanceof SlashCommandInteractionEvent) {
             SlashCommandHandler.handleSlashCommand((SlashCommandInteractionEvent) event);
         }
-        if (event instanceof UserContextInteractionEvent)
+        if (event instanceof CommandAutoCompleteInteractionEvent) {
+            CommandAutoCompleteHandler.handleEvent((CommandAutoCompleteInteractionEvent) event);
+        }
     }
 
 }

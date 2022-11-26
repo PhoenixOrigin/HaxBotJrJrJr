@@ -1,14 +1,13 @@
 package net.Phoenix.features;
 
-import net.Phoenix.handlers.ConfigHandler;
 import net.Phoenix.Main;
 import net.Phoenix.Utilities;
+import net.Phoenix.handlers.ConfigHandler;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.utils.FileUpload;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
@@ -56,7 +55,7 @@ public class GuildMemberJoinFeature {
         } catch (IOException exception) {
             Utilities.printError(exception, errorChannel, event.getGuild());
         }
-
+        // Sending welcome image
         event
                 .getGuild()
                 .getTextChannelById(ConfigHandler.getConfigLong("welcome_channel"))

@@ -6,7 +6,7 @@ import static net.Phoenix.Utilities.queryAPI;
 
 public class AthenaAPI {
 
-    public static ServerList getAvailableServers(){
+    public static ServerList getAvailableServers() {
         // Querying api and returning a serverList deserialized json
         return ServerList.deserialize(queryAPI(AthenaEndpoint.SERVER_LIST.getUrl()));
     }
