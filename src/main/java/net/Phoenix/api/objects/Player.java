@@ -1,6 +1,12 @@
 package net.Phoenix.api.objects;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public class Player {
@@ -80,7 +86,7 @@ public class Player {
             private final PlayerClassType playerClassType;
             private final int totalLevel;
             private final PlayerClassPVP playerClassPVP;
-            private final int blocksWalked;
+            private final long blocksWalked;
             private final int logins;
 
             public PlayerClassType getPlayerClassType() {
@@ -95,7 +101,7 @@ public class Player {
                 return playerClassPVP;
             }
 
-            public int getBlocksWalked() {
+            public long getBlocksWalked() {
                 return blocksWalked;
             }
 
@@ -131,7 +137,7 @@ public class Player {
                 return preEconomyUpdate;
             }
 
-            public PlayerClass(PlayerClassType playerClassType, int totalLevel, PlayerClassPVP playerClassPVP, int blocksWalked, int logins, int deaths, int playtime, PlayerClassSkills playerClassSkills, PlayerClassProfessions professions, int discoveries, int eventsWon, boolean preEconomyUpdate) {
+            public PlayerClass(PlayerClassType playerClassType, int totalLevel, PlayerClassPVP playerClassPVP, long blocksWalked, int logins, int deaths, int playtime, PlayerClassSkills playerClassSkills, PlayerClassProfessions professions, int discoveries, int eventsWon, boolean preEconomyUpdate) {
                 this.playerClassType = playerClassType;
                 this.totalLevel = totalLevel;
                 this.playerClassPVP = playerClassPVP;
@@ -241,16 +247,31 @@ public class Player {
                 }
             }
             public enum PlayerClassType {
-                DARKWIZARD,
-                KNIGHT,
-                ARCHER,
-                SKYSEER,
-                NINJA,
-                SHAMAN,
-                MAGE,
-                WARRIOR,
-                HUNTER,
-                ASSASSIN
+                DARKWIZARD("DARKWIZARD"),
+                KNIGHT("KNIGHT"),
+                ARCHER("ARCHER"),
+                SKYSEER("SKYSEER"),
+                NINJA("NINJA"),
+                SHAMAN("SHAMAN"),
+                MAGE("MAGE"),
+                WARRIOR("WARRIOR"),
+                HUNTER("HUNTER"),
+                ASSASSIN("ASSASIN");
+
+                final String name;
+
+                PlayerClassType(String name){
+                    this.name = name;
+                }
+
+                public PlayerClassType fromString(String className){
+                    for(PlayerClassType type : PlayerClassType.values()){
+                        if(type.name.equals(className)){
+                            return type;
+                        }
+                    }
+                    return null;
+                }
             }
         }
 
@@ -313,11 +334,30 @@ public class Player {
                 }
 
                 public enum PlayerRank {
-                    CHAMPION,
-                    HERO,
-                    VIPPLUS,
-                    VIP,
-                    None;
+                    CHAMPION("CHAMPION"),
+                    HERO("HERO"),
+                    VIPPLUS("VIP+"),
+                    VIP("VIP"),
+                    None(null);
+
+                    final String rank;
+
+                    PlayerRank(String rank){
+                        this.rank = rank;
+                    }
+
+                    public PlayerRank fromString(String rankName){
+                        for(PlayerRank rank : PlayerRank.values()){
+                            if(rank.getRank().equals("rankName")){
+                                return rank;
+                            }
+                        }
+                        return null;
+                    }
+
+                    public String getRank() {
+                        return rank;
+                    }
                 }
             }
 
@@ -344,9 +384,41 @@ public class Player {
     }
 
     public static void deserialize(String json){
-
-
-
-
+        JsonObject object = JsonParser.parseString(json).getAsJsonObject();
+        String kind = object.get("kind").getAsString();
+        int code = object.get("code").getAsInt();
+        long timestamp = object.get("timestamp").getAsLong();
+        String version = object.get("version").getAsString();
+        JsonObject playerData = object.get("data").getAsJsonArray().get(0).getAsJsonObject();
+        String username = playerData.get("username").getAsString();
+        UUID uuid = UUID.fromString(playerData.get("uuid").getAsString());
+        String rank = playerData.get("rank").getAsString();
+        JsonObject meta = playerData.get("meta").getAsJsonObject();
+        String firstJoin = meta.get("firstJoin").getAsString();
+        String lastSeen = meta.get("lastSeen").getAsString();
+        JsonObject location = meta.get("location").getAsJsonObject();
+        PlayerData.PlayerMeta.PlayerLocation playerLocation = new PlayerData.PlayerMeta.PlayerLocation(location.get("online").getAsBoolean(), location.get("server").getAsString());
+        long playtime = (long) (meta.get("playtime").getAsLong() * 4.7);
+        JsonObject playerTag = meta.get("tag").getAsJsonObject();
+        PlayerData.PlayerMeta.PlayerTag tag = new PlayerData.PlayerMeta.PlayerTag(playerTag.get("display").getAsBoolean(), PlayerData.PlayerMeta.PlayerTag.PlayerRank.valueOf(playerTag.get("value")));
+        PlayerData.PlayerMeta playerMeta = new PlayerData.PlayerMeta(firstJoin, lastSeen, playerLocation, playtime, tag, meta.get("veteran").getAsBoolean());
+        List<PlayerData.PlayerClass> playerClasses = new ArrayList<>();
+        for(Map.Entry<String, JsonElement> classInLoop : playerData.get("characters").getAsJsonObject().entrySet()){
+            JsonObject playerClass = classInLoop.getValue().getAsJsonObject();
+            PlayerData.PlayerClass.PlayerClassType type = PlayerData.PlayerClass.PlayerClassType.valueOf(playerClass.get("type").getAsString()0;
+            int totalLevel = playerClass.get("level").getAsInt();
+            PlayerData.PlayerClass.PlayerClassPVP pvp = new PlayerData.PlayerClass.PlayerClassPVP(playerClass.get("pvp").getAsJsonObject().get("kills").getAsInt(), playerClass.get("pvp").getAsJsonObject().get("deaths").getAsInt());
+            long blocksWalked = playerClass.get("blocksWalked").getAsLong();
+            int logins = playerClass.get("logins").getAsInt();
+            int deaths = playerClass.get("deaths").getAsInt();
+            int classPlaytime = (int) (playerClass.get("playtime").getAsInt() * 4.7);
+            this.playerClassSkills = playerClassSkills;
+            this.professions = professions;
+            this.discoveries = discoveries;
+            this.eventsWon = eventsWon;
+            this.preEconomyUpdate = preEconomyUpdate;
+            PlayerData.PlayerClass theclass = new PlayerData.PlayerClass()
+        }
+        PlayerData data = new PlayerData(username, uuid, rank, playerMeta, playerClasses);
     }
 }
