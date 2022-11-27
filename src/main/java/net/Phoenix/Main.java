@@ -5,7 +5,9 @@ import net.Phoenix.handlers.ConfigHandler;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
+import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 
 public class Main {
@@ -39,9 +41,18 @@ public class Main {
                 .addOption(OptionType.INTEGER, "count", "How many worlds do you want to see", false)
                 .queue();
 
+        OptionData feature = new OptionData(OptionType.STRING, "feature", "The name of the feature you would like to toggle", true, true);
+        feature.addChoices(
+                new Command.Choice("Disable all", "disable_all"),
+                new Command.Choice("Soul point command", "soul_point_command"),
+                new Command.Choice("Feature toggle command", "feature_enable_command"),
+                new Command.Choice("Discord welcome image", "discord_welcome_image"),
+                new Command.Choice("Database features", "database")
+        );
+
         // Adding /feature command
         jda.upsertCommand("feature", "Toggle a certain feature")
-                .addOption(OptionType.STRING, "feature", "The name of the feature you would like to toggle", true, true)
+                .addOptions(feature)
                 .addOption(OptionType.BOOLEAN, "enabled", "Whether to enable or disable the feature", true)
                 .queue();
     }
