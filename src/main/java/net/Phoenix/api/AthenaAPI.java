@@ -1,14 +1,14 @@
 package net.Phoenix.api;
 
-import net.Phoenix.api.objects.ServerList;
+import net.Phoenix.api.objects.AthenaServerList;
 
 import static net.Phoenix.Utilities.queryAPI;
 
 public class AthenaAPI {
 
-    public static ServerList getAvailableServers() {
+    public static AthenaServerList getAvailableServers() {
         // Querying api and returning a serverList deserialized json
-        return ServerList.deserialize(queryAPI(AthenaEndpoint.SERVER_LIST.getUrl()));
+        return AthenaServerList.deserialize(queryAPI(AthenaEndpoint.SERVER_LIST.getUrl()));
     }
 
     public enum AthenaEndpoint {

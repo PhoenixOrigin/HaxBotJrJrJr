@@ -8,16 +8,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class ServerList {
+public class AthenaServerList {
 
     private final List<Server> servers;
 
-    public ServerList(List<Server> servers) {
+    public AthenaServerList(List<Server> servers) {
         // Initializer
         this.servers = servers;
     }
 
-    public static ServerList deserialize(String response) {
+    public List<Server> getServers() {
+        // Simple getter
+        return servers;
+    }
+
+    public static AthenaServerList deserialize(String response) {
         // Parse JSON  into this
         JsonObject jsonObject = JsonParser.parseString(response).getAsJsonObject();
         // Creating list to input into later
@@ -35,12 +40,7 @@ public class ServerList {
             serverList.add(new Server(object.getValue().getAsJsonObject().get("firstSeen").getAsLong(), players, object.getKey()));
         }
         // Creating new class of this and returning
-        return new ServerList(serverList);
-    }
-
-    public List<Server> getServers() {
-        // Simple getter
-        return servers;
+        return new AthenaServerList(serverList);
     }
 
     public static class Server {
