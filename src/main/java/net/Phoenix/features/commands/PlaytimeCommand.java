@@ -1,6 +1,5 @@
 package net.Phoenix.features.commands;
 
-import jdk.nashorn.internal.runtime.regexp.joni.Config;
 import net.Phoenix.Main;
 import net.Phoenix.Utilities;
 import net.Phoenix.api.MojangAPI;
