@@ -11,20 +11,6 @@ import java.util.stream.Stream;
 
 public class FeatureCommand {
 
-    /*
-    ! Features activation
-!Disable all features
-disable_all = false
-!Enables soul point command
-soul_point_command = true
-!Enables config modifier command
-config_modify_command = true
-!Enables welcome image
-discord_welcome_image = true
-!All database things
-database = true
-     */
-
     private static final String[] features = new String[]{"disable_all", "soul_point_command", "feature_enable_command", "discord_welcome_image", "databse"};
 
 
