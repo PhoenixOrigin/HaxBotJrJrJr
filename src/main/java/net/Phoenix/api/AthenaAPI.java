@@ -2,11 +2,13 @@ package net.Phoenix.api;
 
 import net.Phoenix.api.objects.AthenaServerList;
 
+import java.io.IOException;
+
 import static net.Phoenix.Utilities.queryAPI;
 
 public class AthenaAPI {
 
-    public static AthenaServerList getAvailableServers() {
+    public static AthenaServerList getAvailableServers() throws IOException {
         // Querying api and returning a serverList deserialized json
         return AthenaServerList.deserialize(queryAPI(AthenaEndpoint.SERVER_LIST.getUrl()));
     }

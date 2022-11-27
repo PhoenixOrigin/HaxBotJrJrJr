@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 
 import java.awt.*;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -22,7 +23,13 @@ public class PlaytimeCommand {
     public static void handleEvent(SlashCommandInteractionEvent event) {
         Connection database = Main.database;
         String username = event.getOption("name").getAsString();
-        MojangUUID mojangUUID = MojangAPI.getPlayerUUID(username);
+        MojangUUID mojangUUID = null;
+        try {
+            mojangUUID = MojangAPI.getPlayerUUID(username);
+        } catch(IOException e){
+            event.getHook().editOriginal("The player has either not played Wynncraft since the implementation of playtime tracking or is invalid").queue();
+            return;
+        }
         UUID uuid = mojangUUID.getUuid();
         EmbedBuilder builder = new EmbedBuilder();
         builder.setTitle(username + "'s playtime");

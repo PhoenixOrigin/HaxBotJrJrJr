@@ -3,9 +3,11 @@ package net.Phoenix.api;
 import net.Phoenix.Utilities;
 import net.Phoenix.api.objects.MojangUUID;
 
+import java.io.IOException;
+
 public class MojangAPI {
 
-    public static MojangUUID getPlayerUUID(String playerName){
+    public static MojangUUID getPlayerUUID(String playerName) throws IOException {
         String json = Utilities.queryAPI(MojangEndpoints.PLAYER.getUrl().replace("{username}", playerName));
         return MojangUUID.deserialize(json);
     }

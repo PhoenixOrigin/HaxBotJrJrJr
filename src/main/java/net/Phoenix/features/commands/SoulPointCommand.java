@@ -7,6 +7,7 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 
 import java.awt.*;
+import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -18,7 +19,12 @@ public class SoulPointCommand {
         // Creating a map that keeps order
         LinkedHashMap<AthenaServerList.Server, Long> serverSoulPoints = new LinkedHashMap<>();
         // Querying wynntils athena api to get online servers
-        AthenaServerList serverList = AthenaAPI.getAvailableServers();
+        AthenaServerList serverList = null;
+        try {
+            serverList = AthenaAPI.getAvailableServers();
+        } catch(IOException e){
+            event.getHook().editOriginal("An error has occured").queue();
+        }
         // Looping through and adding soul point times to map
         for (AthenaServerList.Server server : serverList.getServers()) {
             // Remove it if you don't want YT server to be excluded

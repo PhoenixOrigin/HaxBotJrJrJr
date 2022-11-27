@@ -21,7 +21,7 @@ public class Main {
     public static JDA jda = null;
     public static Connection database = null;
 
-    public static void main(String[] args) throws SQLException {
+    public static void main(String[] args) throws SQLException, ClassNotFoundException {
         // Initilise ConfigHandler
         ConfigHandler.init();
         // No point runing bot if all features disabled
@@ -68,8 +68,9 @@ public class Main {
                 .queue();
 
         if(ConfigHandler.getConfigBool("database")){
-            database = DriverManager.getConnection("jdbc:postgresql://localhost:5432/bot", "admin", "password");
-            PreparedStatement statement = database.prepareStatement("CREATE TABLE [IF NOT EXISTS] playtime (uuid UUID PRIMARY KEY NOT NULL, playtime int NOT NULL);");
+            Class.forName("org.postgresql.Driver");
+            database = DriverManager.getConnection("jdbc:postgresql://localhost:5432/admin", "admin", "password");
+            PreparedStatement statement = database.prepareStatement("CREATE TABLE IF NOT EXISTS playtime (uuid UUID PRIMARY KEY NOT NULL, playtime int NOT NULL);");
             statement.execute();
             TrackerHandler.queueTrackers();
         }

@@ -8,6 +8,7 @@ import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -147,15 +148,10 @@ public class Utilities {
         return output;
     }
 
-    public static String queryAPI(String url) {
-        try {
-            return new BufferedReader(
+    public static String queryAPI(String url) throws IOException {
+        return new BufferedReader(
                     new InputStreamReader(new URL(url).openConnection().getInputStream(), StandardCharsets.UTF_8))
                     .lines()
                     .collect(Collectors.joining("\n"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return "";
     }
 }
