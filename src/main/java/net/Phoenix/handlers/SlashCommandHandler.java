@@ -16,17 +16,15 @@ public class SlashCommandHandler {
                 SoulPointCommand.handleEvent(event);
             }
             // Break switch
-            case "config" -> {
+            case "feature" -> {
                 // Checking if command enabled
-                if (!ConfigHandler.getConfigBool("config_modify_command")) return;
+                if (!ConfigHandler.getConfigBool("feature_enable_command")) return;
                 // Handling Command
                 FeatureCommand.handleEvent(event);
             }
-            // Break switch
             default ->
                 // Handler for old unused commands
-                    event.reply("Hmmmm, something has gone wrong. Please contact PhoenixOrigin#7083 or wait ~10minutes")
-                            .setEphemeral(true)
+                    event.getHook().editOriginal("Hmmmm, something has gone wrong. Please contact PhoenixOrigin#7083 or wait ~10minutes")
                             .queue();
         }
     }

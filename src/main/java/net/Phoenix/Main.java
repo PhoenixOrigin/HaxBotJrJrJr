@@ -10,11 +10,16 @@ import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
 public class Main {
 
     public static JDA jda = null;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws SQLException {
         // Initilise ConfigHandler
         ConfigHandler.init();
         // No point runing bot if all features disabled
@@ -41,7 +46,7 @@ public class Main {
                 .addOption(OptionType.INTEGER, "count", "How many worlds do you want to see", false)
                 .queue();
 
-        OptionData feature = new OptionData(OptionType.STRING, "feature", "The name of the feature you would like to toggle", true, true);
+        OptionData feature = new OptionData(OptionType.STRING, "feature", "The name of the feature you would like to toggle", true);
         feature.addChoices(
                 new Command.Choice("Disable all", "disable_all"),
                 new Command.Choice("Soul point command", "soul_point_command"),
@@ -55,6 +60,12 @@ public class Main {
                 .addOptions(feature)
                 .addOption(OptionType.BOOLEAN, "enabled", "Whether to enable or disable the feature", true)
                 .queue();
+
+        if(ConfigHandler.getConfigBool("database")){
+            Connection db = DriverManager.getConnection("jdbc:postgresql://localhost:5432/bot", "admin", "password");
+            PreparedStatement statement = db.prepareStatement("CREATE TABLE [IF NOT EXISTS] playtime (uuid UUID PRIMARY KEY UNIQUE NOT NULL,playtime int NOT NULL);");
+            statement.execute();
+        }
     }
 
 }
