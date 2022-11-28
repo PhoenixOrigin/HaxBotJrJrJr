@@ -8,8 +8,7 @@ import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -148,10 +147,43 @@ public class Utilities {
         return output;
     }
 
+    /**
+     * @param url The url to query
+     * @return the string response
+     * @throws IOException if the return value is null
+     */
     public static String queryAPI(String url) throws IOException {
         return new BufferedReader(
-                    new InputStreamReader(new URL(url).openConnection().getInputStream(), StandardCharsets.UTF_8))
+                new InputStreamReader(new URL(url).openConnection().getInputStream(), StandardCharsets.UTF_8))
+                .lines()
+                .collect(Collectors.joining("\n"));
+    }
+
+    public static String postAPI(String apiLink, String json) {
+        HttpURLConnection http;
+        try {
+            URL url = new URL(apiLink);
+            URLConnection con = null;
+            con = url.openConnection();
+            http = (HttpURLConnection) con;
+            http.setRequestMethod("POST");
+            http.setDoOutput(true);
+            byte[] out = json.getBytes(StandardCharsets.UTF_8);
+            int length = out.length;
+            http.setFixedLengthStreamingMode(length);
+            http.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+            http.connect();
+            OutputStream os = http.getOutputStream();
+            os.write(out);
+            InputStream is = http.getInputStream();
+            return new BufferedReader(
+                    new InputStreamReader(is, StandardCharsets.UTF_8))
                     .lines()
                     .collect(Collectors.joining("\n"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
+
+
 }

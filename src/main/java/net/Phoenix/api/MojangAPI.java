@@ -1,9 +1,18 @@
 package net.Phoenix.api;
 
+import com.google.common.collect.Lists;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import net.Phoenix.Utilities;
 import net.Phoenix.api.objects.MojangUUID;
+import net.Phoenix.api.objects.MojangUUIDList;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.*;
 
 public class MojangAPI {
 
@@ -12,8 +21,32 @@ public class MojangAPI {
         return MojangUUID.deserialize(json);
     }
 
+    public static MojangUUIDList getPlayerUUIDs(List<String> playerNames) throws InterruptedException, ExecutionException {
+        List<Callable<String>> callableTasks = new ArrayList<>();
+        List<List<String>> players = Lists.partition(playerNames, 10);
+        for (List<String> playerList : players) {
+            JsonArray array = new JsonArray();
+            for (String playerName : playerList) {
+                array.add(playerName);
+            }
+            Callable<String> callableTask = () -> Utilities.postAPI(MojangEndpoints.PLAYERTOUUIDS.getUrl(), array.getAsString());
+            callableTasks.add(callableTask);
+        }
+        ExecutorService executorService = Executors.newFixedThreadPool(10);
+        List<Future<String>> futures = executorService.invokeAll(callableTasks);
+        JsonArray array = new JsonArray();
+        for(Future<String> stringFuture : futures){
+            JsonArray tenArray = JsonParser.parseString(stringFuture.get()).getAsJsonArray();
+            for(JsonElement e : tenArray.asList()){
+                array.add(e.getAsJsonObject().getAsString());
+            }
+        }
+        return MojangUUIDList.deserialize(array.getAsString());
+    }
+
     public enum MojangEndpoints {
-        PLAYER("https://api.mojang.com/users/profiles/minecraft/{username}");
+        PLAYER("https://api.mojang.com/users/profiles/minecraft/{username}"),
+        PLAYERTOUUIDS("https://api.mojang.com/profiles/minecraft");
 
         private final String url;
 
