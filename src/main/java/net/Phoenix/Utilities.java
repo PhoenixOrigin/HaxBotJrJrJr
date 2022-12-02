@@ -1,6 +1,9 @@
 package net.Phoenix;
 
 import com.google.common.base.Splitter;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import net.Phoenix.api.MojangAPI;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 
@@ -10,8 +13,13 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.*;
 import java.util.List;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 public class Utilities {
@@ -159,8 +167,21 @@ public class Utilities {
                 .collect(Collectors.joining("\n"));
     }
 
+    public static String queryAPI(String url, Map<String, String> headers) throws IOException {
+        URL queryurl = new URL(url);
+        HttpURLConnection http = (HttpURLConnection) queryurl.openConnection();
+        for(Map.Entry<String, String> entry : headers.entrySet()){
+            http.addRequestProperty(entry.getKey(), entry.getValue());
+        }
+        http.connect();
+        return new BufferedReader(
+                new InputStreamReader(http.getInputStream(), StandardCharsets.UTF_8))
+                .lines()
+                .collect(Collectors.joining("\n"));
+    }
+
     public static String postAPI(String apiLink, String json) {
-        HttpURLConnection http;
+        HttpURLConnection http = null;
         try {
             URL url = new URL(apiLink);
             URLConnection con = null;
@@ -185,5 +206,47 @@ public class Utilities {
         }
     }
 
+    public static UUID getPlayerUUID(Connection database, String player) {
+        try {
+            PreparedStatement statement = database.prepareStatement(String.format("Select uuid FROM uuidcache WHERE username = '%s'", player));
+            ResultSet set = statement.executeQuery();
+            if (set.next()) {
+                return (UUID) set.getObject(1);
+            } else {
+                Map<String, String> headers = new HashMap<>();
+                headers.put("user-agent", "amoghnrathi@gmail.com or PhoenixOrigin#7083");
+                JsonObject resp = JsonParser.parseString(queryAPI("https://playerdb.co/api/player/minecraft/" + player, headers)).getAsJsonObject();
+                String value = resp.get("data").getAsJsonObject().get("player").getAsJsonObject().get("id").getAsString();
+                if (value == null) throw new NullPointerException();
+                PreparedStatement update = database.prepareStatement("INSERT INTO uuidcache (uuid, username) VALUES (?, ?)");
+                UUID uuid = UUID.fromString(value);
+                update.setObject(1, uuid);
+                update.setString(2, player);
+                update.executeUpdate();
+                return uuid;
+            }
+        } catch (SQLException | IOException ignored) {
+        }
+        return null;
+    }
+
+    public static List<UUID> getPlayersUUIDs(List<String> player) throws SQLException, IOException, InterruptedException, ExecutionException {
+        List<UUID> uuids = new ArrayList<>();
+        Connection database = Main.database;
+        List<Callable<UUID>> callableTasks = new ArrayList<>();
+        for(String username : player) {
+            Callable<UUID> callableTask = () -> getPlayerUUID(database, username);
+            callableTasks.add(callableTask);
+        }
+        ExecutorService executorService = Executors.newFixedThreadPool(100);
+        List<Future<UUID>> futures = executorService.invokeAll(callableTasks);
+        for(Future<UUID> uuidFuture : futures){
+            UUID uuid = uuidFuture.get();
+            if (uuid != null){
+                uuids.add(uuidFuture.get());
+            }
+        }
+        return uuids;
+    }
 
 }

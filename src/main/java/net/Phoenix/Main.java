@@ -64,16 +64,20 @@ public class Main {
                 .queue();
 
         jda.upsertCommand("playtime", "Get the playtime of a certain player")
-                .addOption(OptionType.STRING, "name", "The name of the player")
+                .addOption(OptionType.STRING, "name", "The name of the player", true)
                 .queue();
 
         if(ConfigHandler.getConfigBool("database")){
             Class.forName("org.postgresql.Driver");
             database = DriverManager.getConnection("jdbc:postgresql://localhost:5432/admin", "admin", "password");
-            PreparedStatement statement = database.prepareStatement("CREATE TABLE IF NOT EXISTS playtime (uuid UUID PRIMARY KEY NOT NULL, playtime int NOT NULL);");
+            PreparedStatement statement = database.prepareStatement("CREATE TABLE IF NOT EXISTS playtime (uuid UUID PRIMARY KEY NOT NULL, playtime int NOT NULL, timestamp timestamp);");
             statement.execute();
+            PreparedStatement statement2 = database.prepareStatement("CREATE TABLE IF NOT EXISTS uuidcache (uuid UUID PRIMARY KEY NOT NULL, username TEXT NOT NULL);");
+            statement2.execute();
+
             TrackerHandler.queueTrackers();
         }
+
     }
 
 }

@@ -23,11 +23,16 @@ public class MojangUUID {
         return uuid;
     }
 
-    public static MojangUUID deserialize(String apiResponse){
-        JsonObject json = JsonParser.parseString(apiResponse).getAsJsonObject();
+    public static MojangUUID deserialize(String apiResponse) {
+        JsonObject json;
+        try {
+            json = JsonParser.parseString(apiResponse).getAsJsonObject();
+        } catch(IllegalStateException exception){
+            throw new NullPointerException();
+        }
         String name = json.get("name").getAsString();
         UUID uuid = UUID.fromString(
-                json.get("id").getAsString().replaceFirst (
+                json.get("id").getAsString().replaceFirst(
                         "(\\p{XDigit}{8})(\\p{XDigit}{4})(\\p{XDigit}{4})(\\p{XDigit}{4})(\\p{XDigit}+)",
                         "$1-$2-$3-$4-$5"
                 ));

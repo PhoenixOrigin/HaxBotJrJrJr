@@ -14,6 +14,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.*;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+
 public class MojangAPI {
 
     public static MojangUUID getPlayerUUID(String playerName) throws IOException {
@@ -29,19 +31,21 @@ public class MojangAPI {
             for (String playerName : playerList) {
                 array.add(playerName);
             }
-            Callable<String> callableTask = () -> Utilities.postAPI(MojangEndpoints.PLAYERTOUUIDS.getUrl(), array.getAsString());
+            Callable<String> callableTask = () -> Utilities.postAPI(MojangEndpoints.PLAYERTOUUIDS.getUrl(), array.toString());
             callableTasks.add(callableTask);
         }
-        ExecutorService executorService = Executors.newFixedThreadPool(10);
+        ExecutorService executorService = Executors.newFixedThreadPool(100);
         List<Future<String>> futures = executorService.invokeAll(callableTasks);
+
         JsonArray array = new JsonArray();
         for(Future<String> stringFuture : futures){
+            System.out.println(stringFuture);
             JsonArray tenArray = JsonParser.parseString(stringFuture.get()).getAsJsonArray();
             for(JsonElement e : tenArray.asList()){
-                array.add(e.getAsJsonObject().getAsString());
+                array.add(e.getAsJsonObject().toString());
             }
         }
-        return MojangUUIDList.deserialize(array.getAsString());
+        return MojangUUIDList.deserialize(Utilities.postAPI(MojangEndpoints.PLAYERTOUUIDS.getUrl(), array.toString()));
     }
 
     public enum MojangEndpoints {
