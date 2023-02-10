@@ -67,9 +67,12 @@ public class Main {
                 .addOption(OptionType.STRING, "name", "The name of the player", true)
                 .queue();
 
+        jda.upsertCommand("ping", "Get the ping of the bot!")
+                .queue();
+
         if(ConfigHandler.getConfigBool("database")){
             Class.forName("org.postgresql.Driver");
-            database = DriverManager.getConnection("jdbc:postgresql://localhost:5432/admin", "admin", "password");
+            database = DriverManager.getConnection("jdbc:postgresql://localhost:5432/admin", "admin", "AmoghR2009");
             PreparedStatement statement = database.prepareStatement("CREATE TABLE IF NOT EXISTS playtime (uuid UUID PRIMARY KEY NOT NULL, playtime int NOT NULL, timestamp timestamp);");
             statement.execute();
             PreparedStatement statement2 = database.prepareStatement("CREATE TABLE IF NOT EXISTS uuidcache (uuid UUID PRIMARY KEY NOT NULL, username TEXT NOT NULL);");

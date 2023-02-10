@@ -1,6 +1,7 @@
 package net.Phoenix.handlers;
 
 import net.Phoenix.features.commands.FeatureCommand;
+import net.Phoenix.features.commands.PingCommand;
 import net.Phoenix.features.commands.PlaytimeCommand;
 import net.Phoenix.features.commands.SoulPointCommand;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -28,6 +29,12 @@ public class SlashCommandHandler {
                 if (!ConfigHandler.getConfigBool("playtime_command")) return;
                 // Handling Command
                 PlaytimeCommand.handleEvent(event);
+            }
+            case "ping" -> {
+                // Checking if command enabled
+                if (!ConfigHandler.getConfigBool("ping_command")) return;
+                // Handling Command
+                PingCommand.handleEvent(event);
             }
             default ->
                 // Handler for old unused commands
