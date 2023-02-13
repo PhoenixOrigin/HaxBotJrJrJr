@@ -1,7 +1,7 @@
 package net.Phoenix.features;
 
 import net.Phoenix.Main;
-import net.Phoenix.Utilities;
+import net.Phoenix.utilities.Utilities;
 import net.Phoenix.handlers.ConfigHandler;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.utils.FileUpload;

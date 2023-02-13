@@ -30,7 +30,7 @@ public class SlashCommandHandler {
                 // Handling Command
                 PlaytimeCommand.handleEvent(event);
             }
-            case "ping" -> {
+            case "botping" -> {
                 // Checking if command enabled
                 if (!ConfigHandler.getConfigBool("ping_command")) return;
                 // Handling Command

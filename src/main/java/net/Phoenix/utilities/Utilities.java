@@ -1,8 +1,9 @@
-package net.Phoenix;
+package net.Phoenix.utilities;
 
 import com.google.common.base.Splitter;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import net.Phoenix.Main;
 import net.Phoenix.api.MojangAPI;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;

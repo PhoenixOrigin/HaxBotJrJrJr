@@ -1,7 +1,7 @@
 package net.Phoenix.trackers;
 
 import net.Phoenix.Main;
-import net.Phoenix.Utilities;
+import net.Phoenix.utilities.Utilities;
 import net.Phoenix.api.AthenaAPI;
 import net.Phoenix.api.objects.AthenaServerList;
 

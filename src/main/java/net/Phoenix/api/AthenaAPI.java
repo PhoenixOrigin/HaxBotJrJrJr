@@ -4,7 +4,7 @@ import net.Phoenix.api.objects.AthenaServerList;
 
 import java.io.IOException;
 
-import static net.Phoenix.Utilities.queryAPI;
+import static net.Phoenix.utilities.Utilities.queryAPI;
 
 public class AthenaAPI {
 

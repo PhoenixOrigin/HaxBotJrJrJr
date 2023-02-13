@@ -1,7 +1,7 @@
 package net.Phoenix.features.commands;
 
 import net.Phoenix.Main;
-import net.Phoenix.Utilities;
+import net.Phoenix.utilities.Utilities;
 import net.Phoenix.api.MojangAPI;
 import net.Phoenix.api.objects.MojangUUID;
 import net.Phoenix.handlers.ConfigHandler;

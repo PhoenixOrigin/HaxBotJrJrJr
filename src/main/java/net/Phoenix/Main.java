@@ -1,6 +1,7 @@
 package net.Phoenix;
 
 import net.Phoenix.events.EventListener;
+import net.Phoenix.features.SignupFeature;
 import net.Phoenix.handlers.ConfigHandler;
 import net.Phoenix.handlers.TrackerHandler;
 import net.dv8tion.jda.api.JDA;
@@ -8,13 +9,12 @@ import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
+import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 
 public class Main {
 
@@ -26,6 +26,19 @@ public class Main {
         ConfigHandler.init();
         // No point runing bot if all features disabled
         if (ConfigHandler.getConfigBool("disable_all")) return;
+
+        if(ConfigHandler.getConfigBool("database")){
+            Class.forName("org.postgresql.Driver");
+            database = DriverManager.getConnection("jdbc:postgresql://localhost:5432/admin", "admin", "AmoghR2009");
+            PreparedStatement statement = database.prepareStatement("CREATE TABLE IF NOT EXISTS playtime (uuid UUID PRIMARY KEY NOT NULL, playtime int NOT NULL, timestamp timestamp);");
+            statement.execute();
+            PreparedStatement statement2 = database.prepareStatement("CREATE TABLE IF NOT EXISTS uuidcache (uuid UUID PRIMARY KEY NOT NULL, username TEXT NOT NULL);");
+            statement2.execute();
+            PreparedStatement statement3 = database.prepareStatement("CREATE TABLE IF NOT EXISTS signup (name TEXT PRIMARY KEY NOT NULL, roleid BIGINT NOT NULL);");
+            statement3.execute();
+
+            TrackerHandler.queueTrackers();
+        }
 
         // Creating a builder
         JDABuilder builder = JDABuilder.createDefault(ConfigHandler.getConfigString("token"));
@@ -67,19 +80,13 @@ public class Main {
                 .addOption(OptionType.STRING, "name", "The name of the player", true)
                 .queue();
 
-        jda.upsertCommand("ping", "Get the ping of the bot!")
+        jda.upsertCommand("botping", "Get the ping of the bot!")
                 .queue();
 
-        if(ConfigHandler.getConfigBool("database")){
-            Class.forName("org.postgresql.Driver");
-            database = DriverManager.getConnection("jdbc:postgresql://localhost:5432/admin", "admin", "AmoghR2009");
-            PreparedStatement statement = database.prepareStatement("CREATE TABLE IF NOT EXISTS playtime (uuid UUID PRIMARY KEY NOT NULL, playtime int NOT NULL, timestamp timestamp);");
-            statement.execute();
-            PreparedStatement statement2 = database.prepareStatement("CREATE TABLE IF NOT EXISTS uuidcache (uuid UUID PRIMARY KEY NOT NULL, username TEXT NOT NULL);");
-            statement2.execute();
+        jda.upsertCommand(SignupFeature.createCommand())
+                .queue();
 
-            TrackerHandler.queueTrackers();
-        }
+
 
     }
 
