@@ -14,7 +14,6 @@ public class WynncraftAPI {
     }
 
     public void getPlayersStats(String... players) throws IOException {
-        RateLimiter rateLimiter = RateLimiter.create(180.0 / 60)
         for(String player : players){
             String url = WynncraftEndpoints.PLAYER.getUrl().replace("{PLAYER}", player);
 
