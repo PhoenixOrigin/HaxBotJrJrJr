@@ -1,10 +1,12 @@
 package net.Phoenix.api;
 
 import com.google.common.util.concurrent.RateLimiter;
+import net.Phoenix.utilities.Titrator;
 import net.Phoenix.utilities.Utilities;
 import net.Phoenix.api.objects.Player;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -19,9 +21,9 @@ public class WynncraftAPI {
         return Player.deserialize(Utilities.queryAPI(url));
     }
 
-    public static List<Player> getPlayer(List<String> playerNames) throws InterruptedException {
-        RateLimiter second = RateLimiter.create(50);
-        RateLimiter minute = RateLimiter.create(180, 0, TimeUnit.MINUTES);
+    public static List<Player> getPlayersStats(List<String> playerNames) {
+        Titrator second = new Titrator(50, Duration.ofSeconds(1));
+        Titrator minute = new Titrator(180, Duration.ofMinutes(1));
 
         int numberOfRequests = playerNames.size();
         ExecutorService executor = Executors.newFixedThreadPool(numberOfRequests);

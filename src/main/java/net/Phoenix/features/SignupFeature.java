@@ -22,8 +22,7 @@ public class SignupFeature {
             case "register" -> registerRole(event.getInteraction());
             case "signup" -> signup(event.getInteraction());
             case "delete" -> delete(event.getInteraction());
-            case null -> ping(event.getInteraction());
-            default -> throw new IllegalStateException("Unexpected value: " + event.getSubcommandName());
+            default -> ping(event.getInteraction());
         }
     }
 

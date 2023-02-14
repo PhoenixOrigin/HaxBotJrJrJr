@@ -1,33 +1,33 @@
 package net.Phoenix.utilities;
-import com.google.common.util.concurrent.RateLimiter;
+
 import java.time.Duration;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Titrator {
 
     private final int numDosesPerPeriod;
-    private final RateLimiter rateLimiter;
-    private long numDosesAvailable;
-    private transient final Object doseLock;
+    private final AtomicInteger remainingDoses;
+
 
     public Titrator(int numDosesPerPeriod, Duration period) {
         this.numDosesPerPeriod = numDosesPerPeriod;
-        double numSeconds = period.getSeconds() + period.getNano() / 1000000000d;
-        rateLimiter = RateLimiter.create(1 / numSeconds);
-        numDosesAvailable = 0L;
-        doseLock = new Object();
+        this.remainingDoses = new AtomicInteger(numDosesPerPeriod);
+        ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+        scheduler.scheduleAtFixedRate(this::refill, 0, period.toMillis(), TimeUnit.MILLISECONDS);
     }
 
-    /**
-     * Consumes a dose from this titrator, blocking until a dose is available.
-     */
+    public void refill(){
+        remainingDoses.set(numDosesPerPeriod);
+    }
+
     public void consume() {
-        synchronized (doseLock) {
-            if (numDosesAvailable == 0) { // then refill
-                rateLimiter.acquire();
-                numDosesAvailable += numDosesPerPeriod;
-            }
-            numDosesAvailable--;
+        while (remainingDoses.get() == 0) {
+            Thread.onSpinWait();
         }
+        remainingDoses.decrementAndGet();
     }
 
 }
