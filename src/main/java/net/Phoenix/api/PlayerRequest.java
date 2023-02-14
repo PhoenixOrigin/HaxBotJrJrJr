@@ -1,8 +1,7 @@
 package net.Phoenix.api;
 
-import com.google.common.util.concurrent.RateLimiter;
 import net.Phoenix.api.objects.Player;
-import net.Phoenix.utilities.Titrator;
+import net.Phoenix.utilities.ResourceRateLimit;
 
 import java.io.IOException;
 import java.util.concurrent.Callable;
@@ -10,10 +9,10 @@ import java.util.concurrent.Callable;
 public class PlayerRequest implements Callable<Player> {
 
     private final String player;
-    private final Titrator second;
-    private final Titrator minute;
+    private final ResourceRateLimit second;
+    private final ResourceRateLimit minute;
 
-    public PlayerRequest(String player, Titrator second, Titrator minute){
+    public PlayerRequest(String player, ResourceRateLimit second, ResourceRateLimit minute){
         this.player = player;
         this.second = second;
         this.minute = minute;

@@ -1,7 +1,6 @@
 package net.Phoenix.api;
 
-import com.google.common.util.concurrent.RateLimiter;
-import net.Phoenix.utilities.Titrator;
+import net.Phoenix.utilities.ResourceRateLimit;
 import net.Phoenix.utilities.Utilities;
 import net.Phoenix.api.objects.Player;
 
@@ -12,7 +11,6 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 public class WynncraftAPI {
 
@@ -22,8 +20,8 @@ public class WynncraftAPI {
     }
 
     public static List<Player> getPlayersStats(List<String> playerNames) {
-        Titrator second = new Titrator(50, Duration.ofSeconds(1));
-        Titrator minute = new Titrator(180, Duration.ofMinutes(1));
+        ResourceRateLimit second = new ResourceRateLimit(50, Duration.ofSeconds(1));
+        ResourceRateLimit minute = new ResourceRateLimit(180, Duration.ofMinutes(1));
 
         int numberOfRequests = playerNames.size();
         ExecutorService executor = Executors.newFixedThreadPool(numberOfRequests);
