@@ -20,14 +20,11 @@ public class WynncraftAPI {
     }
 
     public static List<Player> getPlayersStats(List<String> playerNames) {
-        ResourceRateLimit second = new ResourceRateLimit(50, Duration.ofSeconds(1));
-        ResourceRateLimit minute = new ResourceRateLimit(180, Duration.ofMinutes(1));
-
         int numberOfRequests = playerNames.size();
         ExecutorService executor = Executors.newFixedThreadPool(numberOfRequests);
         List<Future<Player>> futures = new ArrayList<>();
         for (String playerName : playerNames) {
-            PlayerRequest requestThread = new PlayerRequest(playerName, second, minute);
+            PlayerRequest requestThread = new PlayerRequest(playerName);
             Future<Player> future = executor.submit(requestThread);
             futures.add(future);
         }

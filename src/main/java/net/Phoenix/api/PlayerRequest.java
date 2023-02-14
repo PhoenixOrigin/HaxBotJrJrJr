@@ -1,5 +1,6 @@
 package net.Phoenix.api;
 
+import net.Phoenix.Main;
 import net.Phoenix.api.objects.Player;
 import net.Phoenix.utilities.ResourceRateLimit;
 
@@ -9,19 +10,14 @@ import java.util.concurrent.Callable;
 public class PlayerRequest implements Callable<Player> {
 
     private final String player;
-    private final ResourceRateLimit second;
-    private final ResourceRateLimit minute;
 
-    public PlayerRequest(String player, ResourceRateLimit second, ResourceRateLimit minute){
+    public PlayerRequest(String player){
         this.player = player;
-        this.second = second;
-        this.minute = minute;
     }
 
     @Override
     public Player call() throws Exception{
-        second.consume();
-        minute.consume();
+        Main.playerRateLimit.consume();
 
         WynncraftAPI api = new WynncraftAPI();
         try {
@@ -29,6 +25,9 @@ public class PlayerRequest implements Callable<Player> {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        Main.playerRateLimit.release();
+
         return null;
     }
 }

@@ -4,6 +4,7 @@ import net.Phoenix.events.EventListener;
 import net.Phoenix.features.SignupFeature;
 import net.Phoenix.handlers.ConfigHandler;
 import net.Phoenix.handlers.TrackerHandler;
+import net.Phoenix.utilities.ResourceRateLimit;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
@@ -20,6 +21,7 @@ public class Main {
 
     public static JDA jda = null;
     public static Connection database = null;
+    public static ResourceRateLimit playerRateLimit;
 
     public static void main(String[] args) throws SQLException, ClassNotFoundException {
         // Initilise ConfigHandler
@@ -86,7 +88,7 @@ public class Main {
         jda.upsertCommand(SignupFeature.createCommand())
                 .queue();
 
-
+        playerRateLimit = new ResourceRateLimit(50, 180);
 
     }
 
