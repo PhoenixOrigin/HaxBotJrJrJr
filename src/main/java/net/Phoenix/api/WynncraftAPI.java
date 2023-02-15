@@ -1,11 +1,11 @@
 package net.Phoenix.api;
 
-import net.Phoenix.utilities.ResourceRateLimit;
+import jdk.jshell.execution.Util;
+import net.Phoenix.Main;
 import net.Phoenix.utilities.Utilities;
 import net.Phoenix.api.objects.Player;
 
 import java.io.IOException;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -14,9 +14,13 @@ import java.util.concurrent.Future;
 
 public class WynncraftAPI {
 
+
     public Player getPlayerStats(String player) throws IOException {
+        WynncraftEndpoints.PLAYER.consumeLimit();
         String url = WynncraftEndpoints.PLAYER.getUrl().replace("{PLAYER}", player);
-        return Player.deserialize(Utilities.queryAPI(url));
+        String json = Utilities.queryAPI(url);
+        WynncraftEndpoints.PLAYER.releaseLimit();
+        return Player.deserialize(json);
     }
 
     public static List<Player> getPlayersStats(List<String> playerNames) {
@@ -53,5 +57,16 @@ public class WynncraftAPI {
         public String getUrl() {
             return url;
         }
+
+        public void consumeLimit(){
+            Main.playerRateLimit.consume();
+            Main.connectionRateLimit.consume();
+        }
+
+        public void releaseLimit(){
+            Main.playerRateLimit.release();
+            Main.connectionRateLimit.release();
+        }
+
     }
 }
