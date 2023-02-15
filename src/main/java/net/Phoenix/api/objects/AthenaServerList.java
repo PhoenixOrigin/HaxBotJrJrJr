@@ -28,11 +28,7 @@ public class AthenaServerList {
 
     public List<String> getOnlinePlayers() {
         AthenaServerList serverList;
-        try {
-            serverList = AthenaAPI.getAvailableServers();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        serverList = AthenaAPI.getAvailableServers();
 
         List<String> array = new ArrayList<>();
         for(AthenaServerList.Server server : serverList.getServers()){

@@ -1,5 +1,6 @@
 package net.Phoenix.handlers;
 
+import net.Phoenix.features.SignupFeature;
 import net.Phoenix.features.commands.FeatureCommand;
 import net.Phoenix.features.commands.PingCommand;
 import net.Phoenix.features.commands.PlaytimeCommand;
@@ -36,6 +37,7 @@ public class SlashCommandHandler {
                 // Handling Command
                 PingCommand.handleEvent(event);
             }
+            case "ping" -> SignupFeature.handleCommand(event);
             default ->
                 // Handler for old unused commands
                     event.getHook().editOriginal("Hmmmm, something has gone wrong. Please contact PhoenixOrigin#7083 or wait ~10minutes")
