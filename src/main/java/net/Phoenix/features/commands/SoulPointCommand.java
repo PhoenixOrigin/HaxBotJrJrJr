@@ -19,12 +19,7 @@ public class SoulPointCommand {
         // Creating a map that keeps order
         LinkedHashMap<AthenaServerList.Server, Long> serverSoulPoints = new LinkedHashMap<>();
         // Querying wynntils athena api to get online servers
-        AthenaServerList serverList = null;
-        try {
-            serverList = AthenaAPI.getAvailableServers();
-        } catch(IOException e){
-            event.getHook().editOriginal("An error has occured").queue();
-        }
+        AthenaServerList serverList = AthenaAPI.getAvailableServers();
         // Looping through and adding soul point times to map
         for (AthenaServerList.Server server : serverList.getServers()) {
             // Remove it if you don't want YT server to be excluded

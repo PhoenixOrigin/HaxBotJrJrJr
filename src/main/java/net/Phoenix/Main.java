@@ -1,5 +1,6 @@
 package net.Phoenix;
 
+import net.Phoenix.api.AthenaAPI;
 import net.Phoenix.events.EventListener;
 import net.Phoenix.features.SignupFeature;
 import net.Phoenix.handlers.ConfigHandler;
@@ -39,7 +40,7 @@ public class Main {
             PreparedStatement statement3 = database.prepareStatement("CREATE TABLE IF NOT EXISTS signup (name TEXT PRIMARY KEY NOT NULL, users BIGINT[] NOT NULL);");
             statement3.execute();
 
-            TrackerHandler.queueTrackers();
+            //TrackerHandler.queueTrackers();
         }
 
         // Creating a builder

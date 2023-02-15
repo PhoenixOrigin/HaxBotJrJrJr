@@ -48,7 +48,7 @@ public class SignupFeature {
         switch (event.getSubcommandName()) {
             case "create" -> createRole(event.getInteraction());
             case "port" -> portRole(event.getInteraction());
-            case "signup" -> signup(event.getInteraction());
+            case "join" -> signup(event.getInteraction());
             case "delete" -> delete(event.getInteraction());
             default -> ping(event.getInteraction());
         }
@@ -88,10 +88,10 @@ public class SignupFeature {
     public static void signup(SlashCommandInteraction interaction) {
         try {
             PreparedStatement statement = database.prepareStatement(String.format("UPDATE signup" +
-                    "SET users = array_append(users, %d)" +
-                    "WHERE name = '%s';", interaction.getMember().getUser().getIdLong(), interaction.getOption("name").getAsString()));
+                    " SET users = array_append(users, %d)" +
+                    " WHERE name='%s';", interaction.getMember().getUser().getIdLong(), interaction.getOption("name").getAsString()));
             statement.executeUpdate();
-            interaction.getHook().editOriginal("Successfully signed you up to " + interaction.getOption("name")).queue();
+            interaction.getHook().editOriginal("Successfully signed you up to " + interaction.getOption("name").getAsString()).queue();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -100,7 +100,7 @@ public class SignupFeature {
 
     public static void delete(SlashCommandInteraction interaction) {
         try {
-            PreparedStatement statement = database.prepareStatement(String.format("DELETE FROM signup WHERE name = '%s'", interaction.getOption("name").getAsString()));
+            PreparedStatement statement = database.prepareStatement(String.format("DELETE FROM signup WHERE name='%s'", interaction.getOption("name").getAsString()));
             statement.executeUpdate();
             interaction.getHook().editOriginal("Successfully deleted the role " + interaction.getOption("name")).queue();
         } catch (SQLException e) {
@@ -110,27 +110,26 @@ public class SignupFeature {
 
     public static void ping(SlashCommandInteraction interaction){
         List<Long> userList = new ArrayList<>(); // create a new ArrayList to store the values
-
         try (Statement statement = database.createStatement();
-             ResultSet resultSet = statement.executeQuery(String.format("SELECT users FROM signup WHERE name = '%s'", interaction.getOption("name").getAsString()))) {
+             ResultSet resultSet = statement.executeQuery(String.format("SELECT users FROM signup WHERE name='%s'", interaction.getOption("name").getAsString()))) {
             resultSet.next();
-            Array usersArray = resultSet.getArray("users");
+            Array usersArray = resultSet.getArray(1);
             Long[] users = (Long[]) usersArray.getArray();
-            userList.addAll(Arrays.asList(users));
+            userList.addAll(List.of(users));
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        List<String> mentions = new ArrayList<>();
+        System.out.println();
+        StringBuilder mentions = new StringBuilder();
         for(long id : userList){
-            interaction.getGuild().retrieveMemberById(id).queue(member -> {
-                mentions.add(member.getAsMention());
-            });
+            mentions.append(" <@!").append(id).append(">");
         }
-        interaction.getChannel().sendMessage(String.join(" ", mentions)).queue(msg -> {
+        System.out.println(mentions);
+        interaction.getChannel().sendMessage(mentions.toString()).queue(msg -> {
             try{
                 String message = interaction.getOption("message").getAsString();
                 msg.editMessage(interaction.getMember().getAsMention() + " has mentioned you with the message: \n\n" + message).queue();
-            } catch (IllegalArgumentException ignored){
+            } catch (NullPointerException | IllegalArgumentException ignored){
                 interaction.getChannel().asTextChannel().sendMessage(interaction.getMember().getAsMention() + " has mentioned you");
             }
         });
@@ -139,24 +138,26 @@ public class SignupFeature {
     public static SlashCommandData createCommand() throws SQLException {
         OptionData data = new OptionData(OptionType.STRING, "name", "The name of the signup role", true, true);
 
-        SlashCommandData command = Commands.slash("ping", "Ping a role");
-        command.addOptions(data);
-        command.addOption(OptionType.STRING, "message", "The message you would like to give");
+        SlashCommandData command = Commands.slash("signup", "SignupRoles");
+
+        SubcommandData ping = new SubcommandData("ping", "Ping a signup role");
+        ping.addOptions(data);
+        ping.addOption(OptionType.STRING, "message", "The message you would like to give");
 
         SubcommandData createPing = new SubcommandData("create", "Create a ping role");
         createPing.addOption(OptionType.STRING, "name", "The name of the signup role", true);
 
         SubcommandData registerPing = new SubcommandData("port", "Pot a ping role");
-        createPing.addOption(OptionType.STRING, "name", "The name of the signup role", true);
-        createPing.addOption(OptionType.ROLE, "role", "The existing role to turn into a signup role", true);
+        registerPing.addOption(OptionType.STRING, "name", "The name of the signup role", true);
+        registerPing.addOption(OptionType.ROLE, "role", "The existing role to turn into a signup role", true);
 
-        SubcommandData signupPing = new SubcommandData("signup", "Signup to a ping role");
+        SubcommandData signupPing = new SubcommandData("join", "Join a signup role");
         signupPing.addOptions(data);
 
         SubcommandData deletePing = new SubcommandData("delete", "Delete a ping role");
         deletePing.addOptions(data);
 
-        command.addSubcommands(createPing, registerPing, signupPing, deletePing);
+        command.addSubcommands(createPing, registerPing, signupPing, deletePing, ping);
 
         return command;
     }
