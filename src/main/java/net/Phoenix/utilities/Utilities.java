@@ -215,7 +215,7 @@ public class Utilities {
                 return (UUID) set.getObject(1);
             } else {
                 Map<String, String> headers = new HashMap<>();
-                headers.put("user-agent", "amoghnrathi@gmail.com or PhoenixOrigin#7083");
+                headers.put("user-agent", "amoghnrathi@gmail.com or phoenix#1691");
                 JsonObject resp = JsonParser.parseString(queryAPI("https://playerdb.co/api/player/minecraft/" + player, headers)).getAsJsonObject();
                 String value = resp.get("data").getAsJsonObject().get("player").getAsJsonObject().get("id").getAsString();
                 if (value == null) throw new NullPointerException();
@@ -231,23 +231,27 @@ public class Utilities {
         return null;
     }
 
-    public static List<UUID> getPlayersUUIDs(List<String> player) throws SQLException, IOException, InterruptedException, ExecutionException {
-        List<UUID> uuids = new ArrayList<>();
-        Connection database = Main.database;
-        List<Callable<UUID>> callableTasks = new ArrayList<>();
-        for(String username : player) {
-            Callable<UUID> callableTask = () -> getPlayerUUID(database, username);
-            callableTasks.add(callableTask);
-        }
-        ExecutorService executorService = Executors.newFixedThreadPool(100);
-        List<Future<UUID>> futures = executorService.invokeAll(callableTasks);
-        for(Future<UUID> uuidFuture : futures){
-            UUID uuid = uuidFuture.get();
-            if (uuid != null){
-                uuids.add(uuidFuture.get());
+    public static List<UUID> getPlayersUUIDs(List<String> player) {
+        try {
+            List<UUID> uuids = new ArrayList<>();
+            Connection database = Main.database;
+            List<Callable<UUID>> callableTasks = new ArrayList<>();
+            for (String username : player) {
+                Callable<UUID> callableTask = () -> getPlayerUUID(database, username);
+                callableTasks.add(callableTask);
             }
+            ExecutorService executorService = Executors.newFixedThreadPool(100);
+            List<Future<UUID>> futures = executorService.invokeAll(callableTasks);
+            for (Future<UUID> uuidFuture : futures) {
+                UUID uuid = uuidFuture.get();
+                if (uuid != null) {
+                    uuids.add(uuidFuture.get());
+                }
+            }
+            return uuids;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-        return uuids;
     }
 
 }

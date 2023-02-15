@@ -3,7 +3,11 @@ package net.Phoenix.api.objects;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import net.Phoenix.Main;
+import net.Phoenix.api.AthenaAPI;
 
+import java.io.IOException;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +24,23 @@ public class AthenaServerList {
     public List<Server> getServers() {
         // Simple getter
         return servers;
+    }
+
+    public List<String> getOnlinePlayers() {
+        AthenaServerList serverList;
+        try {
+            serverList = AthenaAPI.getAvailableServers();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        List<String> array = new ArrayList<>();
+        for(AthenaServerList.Server server : serverList.getServers()){
+            List<String> serverPlayers = server.getPlayers();
+            array.addAll(serverPlayers);
+        }
+
+        return array;
     }
 
     public static AthenaServerList deserialize(String response) {

@@ -36,7 +36,7 @@ public class Main {
             statement.execute();
             PreparedStatement statement2 = database.prepareStatement("CREATE TABLE IF NOT EXISTS uuidcache (uuid UUID PRIMARY KEY NOT NULL, username TEXT NOT NULL);");
             statement2.execute();
-            PreparedStatement statement3 = database.prepareStatement("CREATE TABLE IF NOT EXISTS signup (name TEXT PRIMARY KEY NOT NULL, roleid BIGINT NOT NULL);");
+            PreparedStatement statement3 = database.prepareStatement("CREATE TABLE IF NOT EXISTS signup (name TEXT PRIMARY KEY NOT NULL, users BIGINT[] NOT NULL);");
             statement3.execute();
 
             TrackerHandler.queueTrackers();

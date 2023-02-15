@@ -8,9 +8,13 @@ import static net.Phoenix.utilities.Utilities.queryAPI;
 
 public class AthenaAPI {
 
-    public static AthenaServerList getAvailableServers() throws IOException {
+    public static AthenaServerList getAvailableServers() {
         // Querying api and returning a serverList deserialized json
-        return AthenaServerList.deserialize(queryAPI(AthenaEndpoint.SERVER_LIST.getUrl()));
+        try {
+            return AthenaServerList.deserialize(queryAPI(AthenaEndpoint.SERVER_LIST.getUrl()));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public enum AthenaEndpoint {
