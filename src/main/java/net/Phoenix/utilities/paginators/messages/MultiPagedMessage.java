@@ -2,7 +2,6 @@ package net.Phoenix.utilities.paginators.messages;
 
 import net.Phoenix.Main;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
@@ -11,7 +10,7 @@ import java.util.List;
 
 public class MultiPagedMessage {
 
-    public List<MessageEmbed> embeds;
+    public List<String> messages;
     final public MessageChannel channel;
     public int page;
     final public Emoji forwards;
@@ -23,16 +22,16 @@ public class MultiPagedMessage {
     public boolean deleteOnFinish;
 
 
-    public MultiPagedMessage(List<MessageEmbed> embeds,
-                           MessageChannel channel,
-                           Emoji start,
-                           Emoji backwards,
-                           Emoji finish,
-                           Emoji forwards,
-                           Emoji end,
-                           boolean deleteOnFinish
+    public MultiPagedMessage(List<String> messages,
+                             MessageChannel channel,
+                             Emoji start,
+                             Emoji backwards,
+                             Emoji finish,
+                             Emoji forwards,
+                             Emoji end,
+                             boolean deleteOnFinish
     ) {
-        this.embeds = embeds;
+        this.messages = messages;
         this.channel = channel;
         this.start = start;
         this.forwards = forwards;
@@ -44,7 +43,7 @@ public class MultiPagedMessage {
     }
 
     public MultiPagedMessage send() {
-        message = channel.sendMessageEmbeds(embeds.get(0))
+        message = channel.sendMessage(messages.get(0))
                 .addActionRow(
                         Button.primary("start", start.getName()),
                         Button.primary("previous", backwards.getName()),
@@ -53,16 +52,16 @@ public class MultiPagedMessage {
                         Button.primary("end", end.getName())
                 )
                 .complete();
-        Main.handler.messages.put(message.getIdLong(), this);
+        Main.multiPagedMessageHandler.messages.put(message.getIdLong(), this);
         return this;
     }
 
     public void nextPage() {
-        if (page == embeds.size()) return;
+        if (page == messages.size()) return;
 
         page += 1;
 
-        message.editMessageEmbeds(embeds.get(page)).queue();
+        message.editMessage(messages.get(page)).queue();
     }
 
     public void previousPage() {
@@ -70,19 +69,19 @@ public class MultiPagedMessage {
 
         page -= 1;
 
-        message.editMessageEmbeds(embeds.get(page)).queue();
+        message.editMessage(messages.get(page)).queue();
     }
 
     public void startPage() {
         page = 0;
 
-        message.editMessageEmbeds(embeds.get(page)).queue();
+        message.editMessage(messages.get(page)).queue();
     }
 
     public void endPage() {
-        page = embeds.size() - 1;
+        page = messages.size() - 1;
 
-        message.editMessageEmbeds(embeds.get(page)).queue();
+        message.editMessage(messages.get(page)).queue();
     }
 
     public void movePage(Button button) {
@@ -99,8 +98,8 @@ public class MultiPagedMessage {
             if (deleteOnFinish) {
                 message.delete().queue();
             } else {
-                Main.handler.messages.remove(message.getIdLong());
-                message.editMessageEmbeds(embeds.get(page)).setComponents().queue();
+                Main.multiPagedMessageHandler.messages.remove(message.getIdLong());
+                message.editMessage(messages.get(page)).setComponents().queue();
             }
         }
     }

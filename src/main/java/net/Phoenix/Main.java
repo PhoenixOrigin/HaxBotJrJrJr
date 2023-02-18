@@ -5,6 +5,7 @@ import net.Phoenix.features.SignupFeature;
 import net.Phoenix.handlers.ConfigHandler;
 import net.Phoenix.utilities.paginators.embeds.MultiPagedEmbedHandler;
 import net.Phoenix.utilities.RateLimit;
+import net.Phoenix.utilities.paginators.messages.MultiPagedMessageHandler;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
@@ -24,8 +25,8 @@ public class Main {
     public static Connection database = null;
     public static RateLimit playerRateLimit;
     public static RateLimit connectionRateLimit;
-    public static MultiPagedEmbedHandler handler = new MultiPagedEmbedHandler();
-
+    public static MultiPagedEmbedHandler multiPagedEmbedHandler = new MultiPagedEmbedHandler();
+    public static MultiPagedMessageHandler multiPagedMessageHandler = new MultiPagedMessageHandler();
     public static void main(String[] args) throws SQLException, ClassNotFoundException {
         // Initilise ConfigHandler
         ConfigHandler.init();
@@ -60,7 +61,8 @@ public class Main {
 
         // Registering the event handler
         jda.addEventListener(new EventListener());
-        jda.addEventListener(handler);
+        jda.addEventListener(multiPagedEmbedHandler);
+        jda.addEventListener(multiPagedMessageHandler);
         // Adding /sp command
         jda.upsertCommand("sp", "Lists all the available soul points")
                 .addOption(OptionType.INTEGER, "offset", "Offset to aply to values", false)

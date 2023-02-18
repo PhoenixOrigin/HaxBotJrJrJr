@@ -53,7 +53,7 @@ public class MultiPagedEmbed {
                         Button.primary("end", end.getName())
                 )
                 .complete();
-        Main.handler.messages.put(message.getIdLong(), this);
+        Main.multiPagedEmbedHandler.messages.put(message.getIdLong(), this);
         return this;
     }
 
@@ -99,7 +99,7 @@ public class MultiPagedEmbed {
             if (deleteOnFinish) {
                 message.delete().queue();
             } else {
-                Main.handler.messages.remove(message.getIdLong());
+                Main.multiPagedEmbedHandler.messages.remove(message.getIdLong());
                 message.editMessageEmbeds(embeds.get(page)).setComponents().queue();
             }
         }
