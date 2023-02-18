@@ -1,10 +1,9 @@
 package net.Phoenix;
 
-import net.Phoenix.api.AthenaAPI;
 import net.Phoenix.events.EventListener;
 import net.Phoenix.features.SignupFeature;
 import net.Phoenix.handlers.ConfigHandler;
-import net.Phoenix.handlers.TrackerHandler;
+import net.Phoenix.utilities.paginators.embeds.MultiPagedEmbedHandler;
 import net.Phoenix.utilities.RateLimit;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -13,6 +12,8 @@ import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.requests.GatewayIntent;
+import net.dv8tion.jda.api.utils.ChunkingFilter;
+import net.dv8tion.jda.api.utils.MemberCachePolicy;
 
 import java.sql.*;
 import java.util.concurrent.TimeUnit;
@@ -23,6 +24,7 @@ public class Main {
     public static Connection database = null;
     public static RateLimit playerRateLimit;
     public static RateLimit connectionRateLimit;
+    public static MultiPagedEmbedHandler handler = new MultiPagedEmbedHandler();
 
     public static void main(String[] args) throws SQLException, ClassNotFoundException {
         // Initilise ConfigHandler
@@ -44,8 +46,9 @@ public class Main {
         }
 
         // Creating a builder
-        JDABuilder builder = JDABuilder.createDefault(ConfigHandler.getConfigString("token"));
-
+        JDABuilder builder = JDABuilder.createDefault(ConfigHandler.getConfigString("token"))
+                .setChunkingFilter(ChunkingFilter.ALL) // enable member chunking for all guilds
+                .setMemberCachePolicy(MemberCachePolicy.ALL);
         // Making our guild member events fire
         builder.enableIntents(GatewayIntent.GUILD_MEMBERS);
 
@@ -57,7 +60,7 @@ public class Main {
 
         // Registering the event handler
         jda.addEventListener(new EventListener());
-
+        jda.addEventListener(handler);
         // Adding /sp command
         jda.upsertCommand("sp", "Lists all the available soul points")
                 .addOption(OptionType.INTEGER, "offset", "Offset to aply to values", false)
@@ -79,6 +82,17 @@ public class Main {
                 .addOption(OptionType.BOOLEAN, "enabled", "Whether to enable or disable the feature", true)
                 .queue();
 
+        jda.upsertCommand("message", "Send a message as a bot")
+                .addOption(OptionType.CHANNEL, "channel", "The channel to send the message to", true)
+                .addOption(OptionType.STRING, "message", "The message to send", true)
+                .queue();
+
+        /*
+        One day I will troll
+        jda.upsertCommand("allmessage", "Send a message as a bot")
+                .addOption(OptionType.STRING, "message", "The message to send", true)
+                .queue();
+        */
         jda.upsertCommand("playtime", "Get the playtime of a certain player")
                 .addOption(OptionType.STRING, "name", "The name of the player", true)
                 .queue();
@@ -89,6 +103,7 @@ public class Main {
         jda.upsertCommand(SignupFeature.createCommand())
                 .queue();
 
+
         playerRateLimit = new RateLimit(180, 1, TimeUnit.MINUTES);
         connectionRateLimit = new RateLimit(50, 1, TimeUnit.SECONDS);
 
@@ -96,6 +111,7 @@ public class Main {
             connectionRateLimit.shutdown();
             playerRateLimit.shutdown();
         }));
+
     }
 
 }

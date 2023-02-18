@@ -1,10 +1,7 @@
 package net.Phoenix.handlers;
 
 import net.Phoenix.features.SignupFeature;
-import net.Phoenix.features.commands.FeatureCommand;
-import net.Phoenix.features.commands.PingCommand;
-import net.Phoenix.features.commands.PlaytimeCommand;
-import net.Phoenix.features.commands.SoulPointCommand;
+import net.Phoenix.features.commands.*;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 
 public class SlashCommandHandler {
@@ -37,7 +34,9 @@ public class SlashCommandHandler {
                 // Handling Command
                 PingCommand.handleEvent(event);
             }
+            case "message" -> MessageCommand.handleEvent(event);
             case "signup" -> SignupFeature.handleCommand(event);
+            case "allmessage" -> AllMessageCommand.handleEvent(event);
             default ->
                 // Handler for old unused commands
                     event.getHook().editOriginal("Hmmmm, something has gone wrong. Please contact PhoenixOrigin#7083 or wait ~10minutes")

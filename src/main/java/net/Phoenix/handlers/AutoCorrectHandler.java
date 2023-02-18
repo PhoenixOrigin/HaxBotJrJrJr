@@ -7,7 +7,7 @@ public class AutoCorrectHandler {
 
     public static void handleAutocompleteEvent(CommandAutoCompleteInteractionEvent event) {
         switch (event.getName()) {
-            case "ping" -> SignupFeature.handleAutoComplete(event);
+            case "signup" -> SignupFeature.handleAutoComplete(event);
             default -> {
                 return;
             }

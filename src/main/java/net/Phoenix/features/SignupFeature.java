@@ -4,6 +4,7 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction;
@@ -11,28 +12,25 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
+import org.jetbrains.annotations.NotNull;
 
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static net.Phoenix.Main.database;
 
 public class SignupFeature {
 
-    public static void handleAutoComplete(CommandAutoCompleteInteractionEvent event) {
+    public static void handleAutoComplete(@NotNull CommandAutoCompleteInteractionEvent event) {
         try {
-            if (event.getName().equals("ping") && event.getFocusedOption().getName().equals("name")) {
+            if (event.getName().equals("signup") && event.getFocusedOption().getName().equals("name")) {
                 List<String> words = new ArrayList<>();
                 PreparedStatement statement = database.prepareStatement("SELECT name FROM signup;");
                 ResultSet set = statement.executeQuery();
-                set.next();
-                while (true) {
-                    words.add(set.getString("name"));
-                    if (!set.next()) break;
+                while (set.next()) {
+                    words.add(set.getString(1));
                 }
                 List<Command.Choice> options = words.stream()
                         .map(word -> new Command.Choice(word, word))
@@ -82,7 +80,6 @@ public class SignupFeature {
             e.printStackTrace();
         }
         interaction.getHook().editOriginal("Successfully ported and deleted the original role").queue();
-
     }
 
     public static void signup(SlashCommandInteraction interaction) {
@@ -119,18 +116,16 @@ public class SignupFeature {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        System.out.println();
         StringBuilder mentions = new StringBuilder();
         for(long id : userList){
             mentions.append(" <@!").append(id).append(">");
         }
-        System.out.println(mentions);
         interaction.getChannel().sendMessage(mentions.toString()).queue(msg -> {
             try{
                 String message = interaction.getOption("message").getAsString();
-                msg.editMessage(interaction.getMember().getAsMention() + " has mentioned you with the message: \n\n" + message).queue();
+                msg.editMessage(interaction.getMember().getAsMention() + " has mentioned " + interaction.getOption("name").getAsString() +  " with the message: \n\n" + message).queue();
             } catch (NullPointerException | IllegalArgumentException ignored){
-                interaction.getChannel().asTextChannel().sendMessage(interaction.getMember().getAsMention() + " has mentioned you");
+                msg.editMessage(interaction.getMember().getAsMention() + " has mentioned " + interaction.getOption("name").getAsString()).queue();
             }
         });
     }
