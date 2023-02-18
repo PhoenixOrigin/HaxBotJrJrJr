@@ -1,7 +1,6 @@
 package net.Phoenix.utilities.paginators.messages;
 
 import net.Phoenix.Main;
-import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
@@ -18,7 +17,7 @@ public class MultiPagedMessage {
     final public Emoji start;
     final public Emoji finish;
     final public Emoji end;
-    public Message message;
+    public long message;
     public boolean deleteOnFinish;
 
 
@@ -51,8 +50,8 @@ public class MultiPagedMessage {
                         Button.primary("next", forwards.getName()),
                         Button.primary("end", end.getName())
                 )
-                .complete();
-        Main.multiPagedMessageHandler.messages.put(message.getIdLong(), this);
+                .complete().getIdLong();
+        Main.multiPagedMessageHandler.messages.put(message, this);
         return this;
     }
 
@@ -61,7 +60,7 @@ public class MultiPagedMessage {
 
         page += 1;
 
-        message.editMessage(messages.get(page)).queue();
+        channel.editMessageById(message, messages.get(page)).queue();
     }
 
     public void previousPage() {
@@ -69,19 +68,19 @@ public class MultiPagedMessage {
 
         page -= 1;
 
-        message.editMessage(messages.get(page)).queue();
+        channel.editMessageById(message, messages.get(page)).queue();
     }
 
     public void startPage() {
         page = 0;
 
-        message.editMessage(messages.get(page)).queue();
+        channel.editMessageById(message, messages.get(page)).queue();
     }
 
     public void endPage() {
         page = messages.size() - 1;
 
-        message.editMessage(messages.get(page)).queue();
+        channel.editMessageById(message, messages.get(page)).queue();
     }
 
     public void movePage(Button button) {
@@ -96,17 +95,12 @@ public class MultiPagedMessage {
             endPage();
         } else if (name.contains(end.getName())) {
             if (deleteOnFinish) {
-                message.delete().queue();
+                channel.deleteMessageById(message).queue();
             } else {
-                Main.multiPagedMessageHandler.messages.remove(message.getIdLong());
-                message.editMessage(messages.get(page)).setComponents().queue();
+                Main.multiPagedMessageHandler.messages.remove(message);
+                channel.editMessageById(message, messages.get(page)).setComponents().queue();
             }
         }
-    }
-
-    public MultiPagedMessage deleteOnFinish(boolean yes) {
-        this.deleteOnFinish = yes;
-        return this;
     }
 
 
