@@ -48,11 +48,29 @@ public class SignupFeature {
             case "port" -> portRole(event.getInteraction());
             case "join" -> signup(event.getInteraction());
             case "delete" -> delete(event.getInteraction());
+            case "leave" -> leave(event.getInteraction());
             default -> ping(event.getInteraction());
         }
     }
 
+
+    public static void leave(SlashCommandInteraction interaction) {
+        try {
+            PreparedStatement statement = database.prepareStatement(String.format("UPDATE signup" +
+                    " SET users = array_remove(users, %d)" +
+                    " WHERE name='%s';", interaction.getMember().getUser().getIdLong(), interaction.getOption("name").getAsString()));
+            statement.executeUpdate();
+            interaction.getHook().editOriginal("Successfully removed you from " + interaction.getOption("name").getAsString()).queue();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static void createRole(SlashCommandInteraction interaction){
+        if (interaction.getMember().canInteract(interaction.getGuild().getRolesByName("Cadet", true).get(0))) {
+            interaction.reply("You can't use this >:(").queue();
+            return;
+        }
         try (PreparedStatement statement = database.prepareStatement("INSERT INTO signup (name, users) VALUES (?, ?::BIGINT[])")) {
             statement.setString(1, interaction.getOption("name").getAsString());
             Array usersArray = database.createArrayOf("BIGINT", new ArrayList<Long>().toArray());
@@ -65,6 +83,10 @@ public class SignupFeature {
     }
 
     public static void portRole(SlashCommandInteraction interaction){
+        if (interaction.getMember().canInteract(interaction.getGuild().getRolesByName("Cosmonaut", true).get(0))) {
+            interaction.reply("You can't use this >:(").queue();
+            return;
+        }
         Role toPort = interaction.getOption("role").getAsRole();
         List<Long> members = interaction.getGuild().getMembersWithRoles(toPort)
                 .stream()
@@ -96,6 +118,10 @@ public class SignupFeature {
     }
 
     public static void delete(SlashCommandInteraction interaction) {
+        if (interaction.getMember().canInteract(interaction.getGuild().getRolesByName("Cosmonaut", true).get(0))) {
+            interaction.reply("You can't use this >:(").queue();
+            return;
+        }
         try {
             PreparedStatement statement = database.prepareStatement(String.format("DELETE FROM signup WHERE name='%s'", interaction.getOption("name").getAsString()));
             statement.executeUpdate();
@@ -106,6 +132,10 @@ public class SignupFeature {
     }
 
     public static void ping(SlashCommandInteraction interaction){
+        if (interaction.getMember().canInteract(interaction.getGuild().getRolesByName("Milkyway resident", true).get(0))) {
+            interaction.reply("You can't use this >:(").queue();
+            return;
+        }
         List<Long> userList = new ArrayList<>(); // create a new ArrayList to store the values
         try (Statement statement = database.createStatement();
              ResultSet resultSet = statement.executeQuery(String.format("SELECT users FROM signup WHERE name='%s'", interaction.getOption("name").getAsString()))) {
@@ -120,14 +150,18 @@ public class SignupFeature {
         for(long id : userList){
             mentions.append(" <@!").append(id).append(">");
         }
-        interaction.getChannel().sendMessage(mentions.toString()).queue(msg -> {
-            try{
-                String message = interaction.getOption("message").getAsString();
-                msg.editMessage(interaction.getMember().getAsMention() + " has mentioned " + interaction.getOption("name").getAsString() +  " with the message: \n\n" + message).queue();
-            } catch (NullPointerException | IllegalArgumentException ignored){
-                msg.editMessage(interaction.getMember().getAsMention() + " has mentioned " + interaction.getOption("name").getAsString()).queue();
-            }
-        });
+        try {
+            interaction.getChannel().sendMessage(mentions.toString()).queue(msg -> {
+                try {
+                    String message = interaction.getOption("message").getAsString();
+                    msg.editMessage(interaction.getMember().getAsMention() + " has mentioned " + interaction.getOption("name").getAsString() + " with the message: \n\n" + message).queue();
+                } catch (NullPointerException | IllegalArgumentException ignored) {
+                    msg.editMessage(interaction.getMember().getAsMention() + " has mentioned " + interaction.getOption("name").getAsString()).queue();
+                }
+            });
+        } catch (IllegalStateException e ) {
+            interaction.getChannel().sendMessage("No users have this signup :oof:").queue();
+        }
     }
 
     public static SlashCommandData createCommand() throws SQLException {
@@ -142,7 +176,10 @@ public class SignupFeature {
         SubcommandData createPing = new SubcommandData("create", "Create a ping role");
         createPing.addOption(OptionType.STRING, "name", "The name of the signup role", true);
 
-        SubcommandData registerPing = new SubcommandData("port", "Pot a ping role");
+        SubcommandData leavePing = new SubcommandData("leave", "Leave a ping role");
+        leavePing.addOption(OptionType.STRING, "name", "The name of the signup role", true, true);
+
+        SubcommandData registerPing = new SubcommandData("port", "Port a ping role");
         registerPing.addOption(OptionType.STRING, "name", "The name of the signup role", true);
         registerPing.addOption(OptionType.ROLE, "role", "The existing role to turn into a signup role", true);
 
