@@ -164,7 +164,7 @@ public class SignupFeature {
         }
     }
 
-    public static SlashCommandData createCommand() throws SQLException {
+    public static SlashCommandData createCommand() {
         OptionData data = new OptionData(OptionType.STRING, "name", "The name of the signup role", true, true);
 
         SlashCommandData command = Commands.slash("signup", "SignupRoles");

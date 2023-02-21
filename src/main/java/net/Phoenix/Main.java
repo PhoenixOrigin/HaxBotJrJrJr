@@ -2,7 +2,9 @@ package net.Phoenix;
 
 import net.Phoenix.events.EventListener;
 import net.Phoenix.features.SignupFeature;
+import net.Phoenix.features.commands.PingCommand;
 import net.Phoenix.handlers.ConfigHandler;
+import net.Phoenix.utilities.commands.SlashCommandHandler;
 import net.Phoenix.utilities.paginators.embeds.MultiPagedEmbedHandler;
 import net.Phoenix.utilities.RateLimit;
 import net.Phoenix.utilities.paginators.messages.MultiPagedMessageHandler;
@@ -55,40 +57,23 @@ public class Main {
 
         // Can be changed to literally anything
         builder.setActivity(Activity.watching("Watching over " + ConfigHandler.getConfigString("guild_name")));
-
         // Building
         jda = builder.build();
-
         // Registering the event handler
         jda.addEventListener(new EventListener());
         jda.addEventListener(multiPagedEmbedHandler);
         jda.addEventListener(multiPagedMessageHandler);
+        SlashCommandHandler.registerCommands(jda);
         // Adding /sp command
         jda.upsertCommand("sp", "Lists all the available soul points")
                 .addOption(OptionType.INTEGER, "offset", "Offset to aply to values", false)
                 .addOption(OptionType.INTEGER, "count", "How many worlds do you want to see", false)
                 .queue();
 
-        OptionData feature = new OptionData(OptionType.STRING, "feature", "The name of the feature you would like to toggle", true);
-        feature.addChoices(
-                new Command.Choice("Disable all", "disable_all"),
-                new Command.Choice("Soul point command", "soul_point_command"),
-                new Command.Choice("Feature toggle command", "feature_enable_command"),
-                new Command.Choice("Discord welcome image", "discord_welcome_image"),
-                new Command.Choice("Database features", "database")
-        );
-
-        // Adding /feature command
-        jda.upsertCommand("feature", "Toggle a certain feature")
-                .addOptions(feature)
-                .addOption(OptionType.BOOLEAN, "enabled", "Whether to enable or disable the feature", true)
-                .queue();
-
         jda.upsertCommand("message", "Send a message as a bot")
                 .addOption(OptionType.CHANNEL, "channel", "The channel to send the message to", true)
                 .addOption(OptionType.STRING, "message", "The message to send", true)
                 .queue();
-
         /*
         One day I will troll
         jda.upsertCommand("allmessage", "Send a message as a bot")
@@ -99,12 +84,14 @@ public class Main {
                 .addOption(OptionType.STRING, "name", "The name of the player", true)
                 .queue();
 
-        jda.upsertCommand("botping", "Get the ping of the bot!")
+        //jda.upsertCommand("botping", "Get the ping of the bot!")
+                //.queue();
+
+        jda.upsertCommand("help", "Help You!!!")
                 .queue();
 
         jda.upsertCommand(SignupFeature.createCommand())
                 .queue();
-
 
         playerRateLimit = new RateLimit(180, 1, TimeUnit.MINUTES);
         connectionRateLimit = new RateLimit(50, 1, TimeUnit.SECONDS);

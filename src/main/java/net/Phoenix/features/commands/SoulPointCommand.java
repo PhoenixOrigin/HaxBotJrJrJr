@@ -3,11 +3,13 @@ package net.Phoenix.features.commands;
 import net.Phoenix.api.AthenaAPI;
 import net.Phoenix.api.objects.AthenaServerList;
 import net.Phoenix.handlers.ConfigHandler;
+import net.Phoenix.utilities.TableBuilder;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 
 import java.awt.*;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -53,10 +55,24 @@ public class SoulPointCommand {
         builder.setTitle(String.format("Top %s soul point servers", count));
         // Initialising stringBuilder
         StringBuilder sb = new StringBuilder("```\n");
-        // Adding servers
+
+        TableBuilder table = new TableBuilder()
+                         .addHeaders("World", "Timer")
+                         .setName("Soul Point Regen Timers")
+                        .setBorders(TableBuilder.Borders.HEADER_FRAME)
+                         .frame(true);
+        Map<String, String> rows = new LinkedHashMap<>();
+
+
         for (Map.Entry<AthenaServerList.Server, Long> e : serverSoulPoints.entrySet()) {
-            sb.append(String.format("World %s: %sminutes\n", e.getKey().getServer(), e.getValue().toString()));
+            rows.put(e.getKey().getServer(), e.getValue().toString());
         }
+
+        table.setValues(rows.entrySet()
+                .stream()
+                .map(e -> new String[]{e.getKey(),e.getValue()})
+                .toArray(String[][]::new));
+        sb.append(table.build());
         // Closing block
         sb.append("```");
         // Adding servers

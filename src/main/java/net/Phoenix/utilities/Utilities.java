@@ -6,7 +6,11 @@ import com.google.gson.JsonParser;
 import net.Phoenix.Main;
 import net.Phoenix.api.MojangAPI;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.interactions.commands.OptionMapping;
+import net.dv8tion.jda.api.interactions.commands.OptionType;
 
 import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
@@ -18,6 +22,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.OffsetDateTime;
+import java.time.Period;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.*;
@@ -231,7 +237,45 @@ public class Utilities {
         return null;
     }
 
+    public static int getMessages(Member member, int gap, TimeUnit unit) {
+        List<Message> messages = new ArrayList<>();
+        final OffsetDateTime[] prevTime = {null};
+
+        for (TextChannel channel : member.getGuild().getTextChannels()) {
+
+            channel.getIterableHistory().forEachAsync(message -> {
+                if (message.getAuthor().equals(member)) {
+                    OffsetDateTime currTime = message.getTimeCreated();
+                    if (prevTime[0] != null && currTime.minusMinutes(unit.toMinutes(gap)).isAfter(prevTime[0])) {
+                        messages.add(message);
+                    }
+                    prevTime[0] = currTime;
+                }
+                return true;
+            }).join();
+        }
+
+        return messages.size();
+    }
+
+    public static Object getOptionValue(OptionMapping option) {
+        return switch (option.getType()) {
+            case BOOLEAN -> option.getAsBoolean();
+            case CHANNEL -> option.getAsChannel();
+            case INTEGER -> option.getAsInt();
+            case NUMBER -> option.getAsLong();
+            case MENTIONABLE -> option.getAsMentionable();
+            case ROLE -> option.getAsRole();
+            case STRING -> option.getAsString();
+            case UNKNOWN -> null;
+            case ATTACHMENT -> option.getAsAttachment();
+            case USER -> option.getAsUser();
+            default -> throw new IllegalArgumentException("Unrecognized option type: " + option.getType());
+        };
+    }
+
     public static List<UUID> getPlayersUUIDs(List<String> player) {
+
         try {
             List<UUID> uuids = new ArrayList<>();
             Connection database = Main.database;
