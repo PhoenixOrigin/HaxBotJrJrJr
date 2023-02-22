@@ -1,6 +1,7 @@
-package net.Phoenix.utilities.commands;
+package net.Phoenix.utilities.annotationHandlers;
 
 import net.Phoenix.utilities.Utilities;
+import net.Phoenix.utilities.annotations.BridgeCommand;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -19,7 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-public class SlashCommandHandler extends ListenerAdapter {
+public class SlashCommandAnnotationHandler extends ListenerAdapter {
 
     public static void registerCommands (JDA jda) {
         Reflections reflections = new Reflections("net.Phoenix");

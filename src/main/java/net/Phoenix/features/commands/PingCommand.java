@@ -1,6 +1,6 @@
 package net.Phoenix.features.commands;
 
-import net.Phoenix.utilities.commands.BridgeCommand;
+import net.Phoenix.utilities.annotations.BridgeCommand;
 import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction;
 
 @BridgeCommand(name = "ping",

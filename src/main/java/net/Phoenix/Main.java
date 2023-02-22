@@ -2,18 +2,15 @@ package net.Phoenix;
 
 import net.Phoenix.events.EventListener;
 import net.Phoenix.features.SignupFeature;
-import net.Phoenix.features.commands.PingCommand;
 import net.Phoenix.handlers.ConfigHandler;
-import net.Phoenix.utilities.commands.SlashCommandHandler;
+import net.Phoenix.utilities.annotationHandlers.SlashCommandAnnotationHandler;
 import net.Phoenix.utilities.paginators.embeds.MultiPagedEmbedHandler;
 import net.Phoenix.utilities.RateLimit;
 import net.Phoenix.utilities.paginators.messages.MultiPagedMessageHandler;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
-import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
-import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
@@ -63,7 +60,7 @@ public class Main {
         jda.addEventListener(new EventListener());
         jda.addEventListener(multiPagedEmbedHandler);
         jda.addEventListener(multiPagedMessageHandler);
-        SlashCommandHandler.registerCommands(jda);
+        SlashCommandAnnotationHandler.registerCommands(jda);
         // Adding /sp command
         jda.upsertCommand("sp", "Lists all the available soul points")
                 .addOption(OptionType.INTEGER, "offset", "Offset to aply to values", false)

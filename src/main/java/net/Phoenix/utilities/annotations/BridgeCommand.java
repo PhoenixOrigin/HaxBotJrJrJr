@@ -1,4 +1,4 @@
-package net.Phoenix.utilities.commands;
+package net.Phoenix.utilities.annotations;
 
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 
