@@ -9,4 +9,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface Event {
     Class<? extends net.dv8tion.jda.api.events.Event> eventType();
+
 }
