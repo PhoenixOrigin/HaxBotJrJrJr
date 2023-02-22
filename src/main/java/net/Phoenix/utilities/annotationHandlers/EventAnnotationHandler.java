@@ -13,7 +13,6 @@ public class EventAnnotationHandler {
     }
 
     public static class EventHandler implements EventListener {
-
         public Method eventMethod;
         public Event annotation;
 
@@ -25,7 +24,8 @@ public class EventAnnotationHandler {
 
         @Override
         public void onEvent(@NotNull GenericEvent event) {
-            if (event instanceof annotation.eventType()) {
+            Class<? extends net.dv8tion.jda.api.events.Event> eventtype = annotation.eventType();
+            if(event instanceof eventtype){
                 eventMethod.invoke(eventMethod.getDeclaringClass(), (annotation.eventType()) event);
             }
         }
