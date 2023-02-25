@@ -1,5 +1,6 @@
 package net.Phoenix.features;
 
+import com.google.common.base.Splitter;
 import net.Phoenix.Main;
 import net.Phoenix.utilities.Utilities;
 import net.Phoenix.handlers.ConfigHandler;
@@ -17,37 +18,52 @@ public class GuildMemberJoinFeature {
 
     public static void handleEvent(GuildMemberJoinEvent event) {
         long errorChannel = ConfigHandler.getConfigLong("error_channel");
-        // Getting Icon
         Image icon = null;
         try {
-            icon = ImageIO.read(event.getMember().getEffectiveAvatar().download().get());
+            icon = ImageIO.read(event.getMember().getEffectiveAvatar().download(150).get());
         } catch (InterruptedException | ExecutionException | IOException exception) {
             Utilities.printError(exception, errorChannel, event.getGuild());
         }
-        icon = icon.getScaledInstance(600, 600, Image.SCALE_DEFAULT);
-        icon = Utilities.makeRoundedCorner(Utilities.toBufferedImage(icon), 600);
-
-        // Getting the background image
+        icon = Utilities.makeRoundedCorner(Utilities.toBufferedImage(icon), 250);
         Image background = null;
         try {
             background = ImageIO.read(Main.class.getResource("/images/backgroundImage.png"));
         } catch (IOException exception) {
             Utilities.printError(exception, errorChannel, event.getGuild());
         }
-
-        // Getting graphics handler
         Graphics graphics = background.getGraphics();
-
-        // Draw Their Icon
-        graphics.drawImage(icon, 100, 147, null);
-
-        // Readable font
+        try {
+            graphics.setFont(Font.createFont(Font.TRUETYPE_FONT, Main.class.getResourceAsStream("/fonts/audiowide.ttf")));
+        } catch (FontFormatException | IOException e) {
+            throw new RuntimeException(e);
+        }
+        graphics.drawImage(icon, 975 , 175, null);
         graphics.setFont(graphics.getFont().deriveFont(50f));
-
-        //Draw their config text
-        Utilities.drawCenteredString(graphics, ConfigHandler.getConfigString("welcome_message").replace("{username}", event.getMember().getEffectiveName()), 800, 800, 0, 894);
-
-        // Creating a temp file with image
+        if(event.getMember().getEffectiveName().length() >= 10) {
+            FontMetrics fontMetrics = graphics.getFontMetrics();
+            int textWidth = fontMetrics.stringWidth(Splitter.fixedLength(10).splitToList(event.getMember().getEffectiveName()).get(0) + "...");
+            int x1 = 920;
+            int x2 = 1275;
+            int y = 550;
+            int midpoint = (x1 + x2) / 2;
+            int textX = midpoint - (textWidth / 2);
+            graphics.drawString(Splitter.fixedLength(10).splitToList(event.getMember().getEffectiveName()).get(0) + "...", textX, y);
+            textWidth = fontMetrics.stringWidth("#" + event.getMember().getUser().getDiscriminator());
+            textX = midpoint - (textWidth / 2);
+            graphics.drawString("#" + event.getMember().getUser().getDiscriminator(), textX, 550 + graphics.getFontMetrics().getHeight());
+        } else {
+            FontMetrics fontMetrics = graphics.getFontMetrics();
+            int textWidth = fontMetrics.stringWidth(event.getMember().getEffectiveName());
+            int x1 = 920;
+            int x2 = 1275;
+            int y = 550;
+            int midpoint = (x1 + x2) / 2;
+            int textX = midpoint - (textWidth / 2);
+            graphics.drawString(event.getMember().getEffectiveName(), textX, y);
+            textWidth = fontMetrics.stringWidth("#" + event.getMember().getUser().getDiscriminator());
+            textX = midpoint - (textWidth / 2);
+            graphics.drawString("#" + event.getMember().getUser().getDiscriminator(), textX, 550 + graphics.getFontMetrics().getHeight());
+        }
         File tempFile = null;
         try {
             tempFile = File.createTempFile("image", ".png");
@@ -55,7 +71,6 @@ public class GuildMemberJoinFeature {
         } catch (IOException exception) {
             Utilities.printError(exception, errorChannel, event.getGuild());
         }
-        // Sending welcome image
         event
                 .getGuild()
                 .getTextChannelById(ConfigHandler.getConfigLong("welcome_channel"))

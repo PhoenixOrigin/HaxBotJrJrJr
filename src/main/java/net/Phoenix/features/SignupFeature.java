@@ -8,10 +8,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction;
-import net.dv8tion.jda.api.interactions.commands.build.Commands;
-import net.dv8tion.jda.api.interactions.commands.build.OptionData;
-import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
-import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
+import net.dv8tion.jda.api.interactions.commands.build.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.*;
@@ -168,7 +165,6 @@ public class SignupFeature {
         OptionData data = new OptionData(OptionType.STRING, "name", "The name of the signup role", true, true);
 
         SlashCommandData command = Commands.slash("signup", "SignupRoles");
-
         SubcommandData ping = new SubcommandData("ping", "Ping a signup role");
         ping.addOptions(data);
         ping.addOption(OptionType.STRING, "message", "The message you would like to give");

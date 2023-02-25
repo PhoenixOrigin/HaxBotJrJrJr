@@ -3,6 +3,7 @@ package net.Phoenix;
 import net.Phoenix.events.EventListener;
 import net.Phoenix.features.SignupFeature;
 import net.Phoenix.handlers.ConfigHandler;
+import net.Phoenix.utilities.annotationHandlers.EventAnnotationHandler;
 import net.Phoenix.utilities.annotationHandlers.SlashCommandAnnotationHandler;
 import net.Phoenix.utilities.paginators.embeds.MultiPagedEmbedHandler;
 import net.Phoenix.utilities.RateLimit;
@@ -61,6 +62,7 @@ public class Main {
         jda.addEventListener(multiPagedEmbedHandler);
         jda.addEventListener(multiPagedMessageHandler);
         SlashCommandAnnotationHandler.registerCommands(jda);
+        EventAnnotationHandler.registerEvents(jda);
         // Adding /sp command
         jda.upsertCommand("sp", "Lists all the available soul points")
                 .addOption(OptionType.INTEGER, "offset", "Offset to aply to values", false)

@@ -3,8 +3,10 @@ package net.Phoenix.utilities.annotationHandlers;
 import net.Phoenix.utilities.Utilities;
 import net.Phoenix.utilities.annotations.BridgeCommand;
 import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.events.guild.voice.GenericGuildVoiceEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.hooks.SubscribeEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
@@ -25,6 +27,7 @@ public class SlashCommandAnnotationHandler extends ListenerAdapter {
     public static void registerCommands (JDA jda) {
         Reflections reflections = new Reflections("net.Phoenix");
         Set<Class<?>> annotated = reflections.getTypesAnnotatedWith(BridgeCommand.class);
+        System.out.println(annotated);
         for (Class<?> c : annotated) {
             for (Method method : c.getDeclaredMethods()) {
                 if (!method.isAnnotationPresent(BridgeCommand.invoke.class)) continue;

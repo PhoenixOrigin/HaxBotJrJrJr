@@ -2,10 +2,15 @@ package net.Phoenix.handlers;
 
 import net.Phoenix.features.SignupFeature;
 import net.Phoenix.features.commands.*;
+import net.Phoenix.utilities.annotations.Event;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 
-public class SlashCommandHandler {
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.io.File;
 
+public class SlashCommandHandler {
     public static void handleSlashCommand(SlashCommandInteractionEvent event) {
         //event.deferReply(true).queue();
         switch (event.getName()) {

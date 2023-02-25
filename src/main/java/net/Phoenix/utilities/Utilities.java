@@ -13,6 +13,7 @@ import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 
 import java.awt.*;
+import java.awt.font.TextAttribute;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.*;
@@ -22,6 +23,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.AttributedCharacterIterator;
+import java.text.AttributedString;
 import java.time.OffsetDateTime;
 import java.time.Period;
 import java.util.*;
@@ -59,58 +62,70 @@ public class Utilities {
     }
 
     /**
-     * Draws text in a box centered.
      *
-     * @param g         The graphics of the image you want to overlay the text on
-     * @param text      The text to be overlayed
-     * @param lineWidth Max line text width
-     * @param topX      Box top x
-     * @param topY      Box top y
-     * @param bottomY   Height of box
+     * Draws a centered string in the box created by the paramaters
+     *
+     * @param g Graphics object of image to draw on
+     * @param topX Top x of box
+     * @param topY Top y of box
+     * @param bottomX Bottom x of box
+     * @param bottomY Bottom y of box
+     * @param text Text to draw
      */
-    public static void drawCenteredString(Graphics g, String text, int lineWidth, int topX, int topY, int bottomY) {
-        // Getting Font Metrics
+    public static void drawCenteredMultilineString(Graphics g, int topX, int topY, int bottomX, int bottomY, String text) {
         FontMetrics metrics = g.getFontMetrics();
+        int lineHeight = metrics.getHeight();
 
-        // Making a list with separate lines
+        int maxLineWidth = bottomX - topX;
+        int y = topY + ((bottomY - topY - (lineHeight * getNumberOfLines(text))) / 2) + metrics.getAscent();
+
+        String[] words = text.split(" ");
+        StringBuilder sb = new StringBuilder();
         List<String> lines = new ArrayList<>();
 
-        // If text is short enough adding to list else working through it
-        if (metrics.stringWidth(text) < lineWidth) {
-            lines.add(text);
-        } else {
-            // Splitting the words
-            List<String> words = List.of(text.split(" "));
-
-            // Making a stringbuilder
-            StringBuilder line = new StringBuilder();
-
-            // Looping through words
-            for (String word : words) {
-                // Adding line to list if meeets size
-                if (metrics.stringWidth(line.toString()) + metrics.stringWidth(word) >= lineWidth) {
-                    lines.add(line.toString());
-                    line = new StringBuilder();
-                } else {
-                    // Adding word if not
-                    line.append(word);
-                    line.append(" ");
-                }
+        for (String word : words) {
+            if (metrics.stringWidth(sb.toString() + " " + word) > maxLineWidth) {
+                lines.add(sb.toString());
+                sb.setLength(0);
             }
+            sb.append(word).append(" ");
         }
+        lines.add(sb.toString());
 
-        // Getting how tall our text would be
-        int textHeight = lines.size() * metrics.getHeight();
+        for (int i = 0; i < lines.size(); i++) {
+            String line = lines.get(i);
+            int lineWidth = metrics.stringWidth(line);
 
-        // Getting startY
-        int y = ((bottomY - topY) - textHeight) / 2;
+            int x = topX + ((maxLineWidth - lineWidth) / 2);
+            g.drawString(line, x, y);
 
-        // Drawing text
-        for (String line : lines) {
-            g.drawString(line, topX, y);
-            y += metrics.getHeight();
+            y += lineHeight;
         }
     }
+
+    private static int getNumberOfLines(String text) {
+        if (text == null || text.isEmpty()) {
+            return 0;
+        }
+        return text.split("\r\n|\r|\n").length;
+    }
+
+    public static void drawTextWithOutline(Graphics2D g2d, String text, int x, int y, Color textColor, Color outlineColor, int outlineSize) {
+        g2d.setColor(outlineColor);
+        g2d.setStroke(new BasicStroke(outlineSize, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        FontMetrics fontMetrics = g2d.getFontMetrics();
+        int textWidth = fontMetrics.stringWidth(text);
+        int textHeight = fontMetrics.getHeight();
+        int textX = x;
+        int textY = y + textHeight/2 - fontMetrics.getDescent();
+        g2d.drawString(text, textX, textY);
+        g2d.setColor(textColor);
+        g2d.setStroke(new BasicStroke());
+        g2d.drawString(text, textX, textY);
+    }
+
+
+
 
     /**
      * Converts a given Image into a BufferedImage
