@@ -1,31 +1,28 @@
 package net.Phoenix.features.commands;
 
-import net.Phoenix.utilities.paginators.embeds.MultiPagedEmbed;
-import net.Phoenix.utilities.paginators.embeds.MultiPagedEmbedBuilder;
-import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.Phoenix.utilities.annotations.BridgeCommand;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.commands.OptionType;
 
-import java.util.ArrayList;
-import java.util.List;
-
+@BridgeCommand(name = "message",
+        description = "Send a message using the bot",
+        options = {
+            @BridgeCommand.CommandOption(type = OptionType.STRING,
+                    name = "message",
+                    description = "The message to send",
+                    required = true
+            ),
+            @BridgeCommand.CommandOption(type = OptionType.CHANNEL,
+                    name = "channel",
+                    description = "The channel to send the message in",
+                    required = true
+            )
+        }
+)
 public class MessageCommand {
 
+    @BridgeCommand.invoke
     public static void handleEvent(SlashCommandInteractionEvent event){
-        EmbedBuilder builder = new EmbedBuilder();
-        builder.setAuthor("phoenix");
-        builder.setDescription("phoenix is hot (mltippage embed testing)");
-        List<MessageEmbed> emeds = new ArrayList<>();
-        emeds.add(builder.build());
-        builder.setDescription("phoenix is so hot (mltippage embed testing)");
-        emeds.add(builder.build());
-        builder.setDescription("phoenix is so so so hot (mltippage embed testing)");
-        emeds.add(builder.build());
-        new MultiPagedEmbedBuilder()
-            .setChannel(event.getChannel())
-            .loadEmbeds(emeds)
-            .deleteOnFinish(false)
-            .createAndSend();
         if(!event.getMember().getId().equals("780889323162566697")) {
             event.getHook().editOriginal("What are you doing \uD83E\uDD14").queue();
             return;

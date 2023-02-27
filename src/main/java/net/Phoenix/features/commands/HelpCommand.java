@@ -1,14 +1,21 @@
 package net.Phoenix.features.commands;
 
 import net.Phoenix.Main;
+import net.Phoenix.utilities.annotations.BridgeCommand;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.Command;
 
 import java.util.List;
 
+@BridgeCommand(name = "help",
+        description = "The bot's help message"
+)
 public class HelpCommand {
 
+    @BridgeCommand.invoke
     public static void handleEvent(SlashCommandInteractionEvent event) {
+        event.deferReply(true).queue();
+
         List<Command> commands = Main.jda.retrieveCommands().complete();
         event.getHook().editOriginal(getHelpMessage(commands)).queue();
     }

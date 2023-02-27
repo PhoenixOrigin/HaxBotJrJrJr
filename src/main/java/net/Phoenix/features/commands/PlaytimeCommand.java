@@ -5,8 +5,10 @@ import net.Phoenix.utilities.Utilities;
 import net.Phoenix.api.MojangAPI;
 import net.Phoenix.api.objects.MojangUUID;
 import net.Phoenix.handlers.ConfigHandler;
+import net.Phoenix.utilities.annotations.BridgeCommand;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.commands.OptionType;
 
 import java.awt.*;
 import java.io.IOException;
@@ -18,9 +20,17 @@ import java.time.Duration;
 import java.time.LocalTime;
 import java.util.UUID;
 
+@BridgeCommand(name = "playtime",
+        description = "Get a user's playtime",
+        options = {
+                @BridgeCommand.CommandOption(type = OptionType.STRING, name = "name", description = "The IGN of the player who's playtime you wanna check", required = true)
+        }
+)
 public class PlaytimeCommand {
 
+    @BridgeCommand.invoke
     public static void handleEvent(SlashCommandInteractionEvent event) {
+        event.deferReply(true).queue();
         Connection database = Main.database;
         String username = event.getOption("name").getAsString();
         MojangUUID mojangUUID = null;
@@ -66,7 +76,7 @@ public class PlaytimeCommand {
                 event.getHook().editOriginal("The player has either not played Wynncraft since the implementation of playtime tracking or is invalid").queue();
                 return;
             }
-            message += "Weekly Playtime: " + LocalTime.MIN.plus(Duration.ofMinutes(dailyPlaytime.getInt(1))).toString().replace(":", "h") + "m\n";
+            message += "Today's Playtime: " + LocalTime.MIN.plus(Duration.ofMinutes(dailyPlaytime.getInt(1))).toString().replace(":", "h") + "m\n";
 
         } catch(SQLException exception){
             exception.printStackTrace();

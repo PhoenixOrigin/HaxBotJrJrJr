@@ -1,22 +1,23 @@
 package net.Phoenix;
 
-import net.Phoenix.events.EventListener;
-import net.Phoenix.features.SignupFeature;
 import net.Phoenix.handlers.ConfigHandler;
+import net.Phoenix.handlers.TrackerHandler;
+import net.Phoenix.utilities.RateLimit;
 import net.Phoenix.utilities.annotationHandlers.EventAnnotationHandler;
 import net.Phoenix.utilities.annotationHandlers.SlashCommandAnnotationHandler;
 import net.Phoenix.utilities.paginators.embeds.MultiPagedEmbedHandler;
-import net.Phoenix.utilities.RateLimit;
 import net.Phoenix.utilities.paginators.messages.MultiPagedMessageHandler;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
-import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
 
 public class Main {
@@ -43,7 +44,7 @@ public class Main {
             PreparedStatement statement3 = database.prepareStatement("CREATE TABLE IF NOT EXISTS signup (name TEXT PRIMARY KEY NOT NULL, users BIGINT[] NOT NULL);");
             statement3.execute();
 
-            //TrackerHandler.queueTrackers();
+            TrackerHandler.queueTrackers();
         }
 
         // Creating a builder
@@ -57,40 +58,11 @@ public class Main {
         builder.setActivity(Activity.watching("Watching over " + ConfigHandler.getConfigString("guild_name")));
         // Building
         jda = builder.build();
-        // Registering the event handler
-        jda.addEventListener(new EventListener());
+        jda.updateCommands().queue();
         jda.addEventListener(multiPagedEmbedHandler);
         jda.addEventListener(multiPagedMessageHandler);
         SlashCommandAnnotationHandler.registerCommands(jda);
         EventAnnotationHandler.registerEvents(jda);
-        // Adding /sp command
-        jda.upsertCommand("sp", "Lists all the available soul points")
-                .addOption(OptionType.INTEGER, "offset", "Offset to aply to values", false)
-                .addOption(OptionType.INTEGER, "count", "How many worlds do you want to see", false)
-                .queue();
-
-        jda.upsertCommand("message", "Send a message as a bot")
-                .addOption(OptionType.CHANNEL, "channel", "The channel to send the message to", true)
-                .addOption(OptionType.STRING, "message", "The message to send", true)
-                .queue();
-        /*
-        One day I will troll
-        jda.upsertCommand("allmessage", "Send a message as a bot")
-                .addOption(OptionType.STRING, "message", "The message to send", true)
-                .queue();
-        */
-        jda.upsertCommand("playtime", "Get the playtime of a certain player")
-                .addOption(OptionType.STRING, "name", "The name of the player", true)
-                .queue();
-
-        //jda.upsertCommand("botping", "Get the ping of the bot!")
-                //.queue();
-
-        jda.upsertCommand("help", "Help You!!!")
-                .queue();
-
-        jda.upsertCommand(SignupFeature.createCommand())
-                .queue();
 
         playerRateLimit = new RateLimit(180, 1, TimeUnit.MINUTES);
         connectionRateLimit = new RateLimit(50, 1, TimeUnit.SECONDS);

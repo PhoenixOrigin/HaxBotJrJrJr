@@ -4,35 +4,40 @@ import com.google.common.base.Splitter;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.Phoenix.Main;
-import net.Phoenix.api.MojangAPI;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
-import net.dv8tion.jda.api.interactions.commands.OptionType;
 
 import java.awt.*;
-import java.awt.font.TextAttribute;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.text.AttributedCharacterIterator;
-import java.text.AttributedString;
 import java.time.OffsetDateTime;
-import java.time.Period;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 public class Utilities {
+
+    public static boolean hasHigherRole(Member member, Role roleToCheckAgainst) {
+        List<Role> memberRoles = member.getRoles();
+        boolean hasHigherRole = false;
+        for (Role role : memberRoles) {
+            if (role.getPosition() >= roleToCheckAgainst.getPosition()) {
+                hasHigherRole = true;
+                break;
+            }
+        }
+        return hasHigherRole;
+    }
+
 
     /**
      * Prints error to a specific JDA discord server
@@ -114,7 +119,6 @@ public class Utilities {
         g2d.setColor(outlineColor);
         g2d.setStroke(new BasicStroke(outlineSize, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
         FontMetrics fontMetrics = g2d.getFontMetrics();
-        int textWidth = fontMetrics.stringWidth(text);
         int textHeight = fontMetrics.getHeight();
         int textX = x;
         int textY = y + textHeight/2 - fontMetrics.getDescent();
@@ -228,28 +232,17 @@ public class Utilities {
         }
     }
 
-    public static UUID getPlayerUUID(Connection database, String player) {
-        try {
-            PreparedStatement statement = database.prepareStatement(String.format("Select uuid FROM uuidcache WHERE username = '%s'", player));
-            ResultSet set = statement.executeQuery();
-            if (set.next()) {
-                return (UUID) set.getObject(1);
-            } else {
+    public static UUID getPlayerUUID(String player) {
                 Map<String, String> headers = new HashMap<>();
                 headers.put("user-agent", "amoghnrathi@gmail.com or phoenix#1691");
-                JsonObject resp = JsonParser.parseString(queryAPI("https://playerdb.co/api/player/minecraft/" + player, headers)).getAsJsonObject();
-                String value = resp.get("data").getAsJsonObject().get("player").getAsJsonObject().get("id").getAsString();
-                if (value == null) throw new NullPointerException();
-                PreparedStatement update = database.prepareStatement("INSERT INTO uuidcache (uuid, username) VALUES (?, ?)");
-                UUID uuid = UUID.fromString(value);
-                update.setObject(1, uuid);
-                update.setString(2, player);
-                update.executeUpdate();
-                return uuid;
-            }
-        } catch (SQLException | IOException ignored) {
+        JsonObject resp = null;
+        try {
+            resp = JsonParser.parseString(queryAPI("https://playerdb.co/api/player/minecraft/" + player, headers)).getAsJsonObject();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
-        return null;
+        String value = resp.get("data").getAsJsonObject().get("player").getAsJsonObject().get("id").getAsString();
+        return UUID.fromString(value);
     }
 
     public static int getMessages(Member member, int gap, TimeUnit unit) {
@@ -293,10 +286,9 @@ public class Utilities {
 
         try {
             List<UUID> uuids = new ArrayList<>();
-            Connection database = Main.database;
             List<Callable<UUID>> callableTasks = new ArrayList<>();
             for (String username : player) {
-                Callable<UUID> callableTask = () -> getPlayerUUID(database, username);
+                Callable<UUID> callableTask = () -> getPlayerUUID(username);
                 callableTasks.add(callableTask);
             }
             ExecutorService executorService = Executors.newFixedThreadPool(100);

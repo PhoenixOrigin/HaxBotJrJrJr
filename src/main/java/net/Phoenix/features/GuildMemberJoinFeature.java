@@ -5,6 +5,7 @@ import net.Phoenix.Main;
 import net.Phoenix.utilities.Utilities;
 import net.Phoenix.handlers.ConfigHandler;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
+import net.dv8tion.jda.api.hooks.SubscribeEvent;
 import net.dv8tion.jda.api.utils.FileUpload;
 
 import javax.imageio.ImageIO;
@@ -16,6 +17,7 @@ import java.util.concurrent.ExecutionException;
 
 public class GuildMemberJoinFeature {
 
+    @SubscribeEvent
     public static void handleEvent(GuildMemberJoinEvent event) {
         long errorChannel = ConfigHandler.getConfigLong("error_channel");
         Image icon = null;

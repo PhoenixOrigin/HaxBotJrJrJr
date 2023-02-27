@@ -7,6 +7,7 @@ import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction;
         description = "Get the bot's ping"
 )
 public class PingCommand {
+
     @BridgeCommand.invoke
     public static void invoke(SlashCommandInteraction interaction) {
         interaction.deferReply().setEphemeral(true).queue();
@@ -17,5 +18,6 @@ public class PingCommand {
         });
     }
 
-    
+
+
 }

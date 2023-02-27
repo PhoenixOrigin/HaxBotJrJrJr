@@ -4,8 +4,10 @@ import net.Phoenix.api.AthenaAPI;
 import net.Phoenix.api.objects.AthenaServerList;
 import net.Phoenix.handlers.ConfigHandler;
 import net.Phoenix.utilities.TableBuilder;
+import net.Phoenix.utilities.annotations.BridgeCommand;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.commands.OptionType;
 
 import java.awt.*;
 import java.io.IOException;
@@ -15,9 +17,18 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+@BridgeCommand(name = "sp",
+        description = "Get the fastest soul point worlds",
+        options = {
+                @BridgeCommand.CommandOption(type = OptionType.INTEGER, name = "offset", description = "Offset of times"),
+                @BridgeCommand.CommandOption(type = OptionType.INTEGER, name = "count", description = "Amount of worlds")
+        }
+)
 public class SoulPointCommand {
 
-    public static void handleEvent(SlashCommandInteractionEvent event) {
+    @BridgeCommand.invoke
+    public static void handleEvent(SlashCommandInteractionEvent event, @BridgeCommand.OptionValue(name = "offset") Integer offset, @BridgeCommand.OptionValue(name = "count") Integer count ) {
+        event.deferReply(true).queue();
         // Creating a map that keeps order
         LinkedHashMap<AthenaServerList.Server, Long> serverSoulPoints = new LinkedHashMap<>();
         // Querying wynntils athena api to get online servers
@@ -29,13 +40,13 @@ public class SoulPointCommand {
                 continue;
             }
             // If offset parameter there, use it else no offset
-            int offset = event.getInteraction().getOption("offset") == null ? 0 : event.getInteraction().getOption("offset").getAsInt();
+            offset = offset == null ? 0 : offset;
             // Put soul point timers
             serverSoulPoints.put(server, 20 - (server.getUptimeMinutes() + offset) % 20);
         }
 
         // Get server count wanted default 10
-        int count = event.getInteraction().getOption("count") == null ? 10 : event.getInteraction().getOption("count").getAsInt();
+        count = count == null ? 10 : count;
 
         // Some complicatedish sorting + limiting to number
         serverSoulPoints =

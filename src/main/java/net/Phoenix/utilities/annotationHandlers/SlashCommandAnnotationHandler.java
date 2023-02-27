@@ -3,11 +3,8 @@ package net.Phoenix.utilities.annotationHandlers;
 import net.Phoenix.utilities.Utilities;
 import net.Phoenix.utilities.annotations.BridgeCommand;
 import net.dv8tion.jda.api.JDA;
-import net.dv8tion.jda.api.events.guild.voice.GenericGuildVoiceEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import net.dv8tion.jda.api.hooks.SubscribeEvent;
-import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
@@ -34,13 +31,13 @@ public class SlashCommandAnnotationHandler extends ListenerAdapter {
                 BridgeCommand commandAnnotation = method.getDeclaringClass().getAnnotation(BridgeCommand.class);
                 SlashCommandData commandData = Commands.slash(commandAnnotation.name(), commandAnnotation.description());
                 for (BridgeCommand.CommandOption commandOption : commandAnnotation.options()) {
-                    commandData.addOptions(new OptionData(commandOption.type(), commandOption.name(), commandOption.description(), commandOption.required()));
+                    commandData.addOptions(new OptionData(commandOption.type(), commandOption.name(), commandOption.description(), commandOption.required(), commandOption.autocomplete()));
                 }
                 for (BridgeCommand.SubCommand subCommand : commandAnnotation.subcommands()) {
                     SubcommandData data = new SubcommandData(subCommand.name(), subCommand.description());
 
                     for (BridgeCommand.CommandOption commandOption : subCommand.options()) {
-                        data.addOptions(new OptionData(commandOption.type(), commandOption.name(), commandOption.description(), commandOption.required()));
+                        data.addOptions(new OptionData(commandOption.type(), commandOption.name(), commandOption.description(), commandOption.required(), commandOption.autocomplete()));
                     }
 
                     commandData.addSubcommands(data);
@@ -60,13 +57,13 @@ public class SlashCommandAnnotationHandler extends ListenerAdapter {
 
                 SlashCommandData commandData = Commands.slash(commandAnnotation.name(), commandAnnotation.description());
                 for (BridgeCommand.CommandOption commandOption : commandAnnotation.options()) {
-                    commandData.addOptions(new OptionData(commandOption.type(), commandOption.name(), commandOption.description(), commandOption.required()));
+                    commandData.addOptions(new OptionData(commandOption.type(), commandOption.name(), commandOption.description(), commandOption.required(), commandOption.autocomplete()));
                 }
                 for (BridgeCommand.SubCommand subCommand : commandAnnotation.subcommands()) {
                     SubcommandData data = new SubcommandData(subCommand.name(), subCommand.description());
 
                     for (BridgeCommand.CommandOption commandOption : subCommand.options()) {
-                        data.addOptions(new OptionData(commandOption.type(), commandOption.name(), commandOption.description(), commandOption.required()));
+                        data.addOptions(new OptionData(commandOption.type(), commandOption.name(), commandOption.description(), commandOption.required(), commandOption.autocomplete()));
                     }
 
                     commandData.addSubcommands(data);
@@ -94,22 +91,22 @@ public class SlashCommandAnnotationHandler extends ListenerAdapter {
             BridgeCommand.CommandOption[] options = annotation.options();
             if (options.length == 0) {
                 try {
-                    command.invoke(command.getDeclaringClass(), List.of(event.getInteraction()).toArray());
+                    command.invoke(command.getDeclaringClass(), List.of(event).toArray());
                 } catch (IllegalAccessException | InvocationTargetException e) {
                     throw new RuntimeException(e);
                 }
             } else {
                 List<Parameter> parameters = Arrays.stream(command.getParameters()).toList();
                 List<Object> args = new ArrayList<>();
-                args.add(event.getInteraction());
-                for (OptionMapping option : event.getOptions()) {
-                    for (Parameter parameter : parameters) {
-                        if (parameter.isAnnotationPresent(BridgeCommand.OptionValue.class) && parameter.getAnnotation(BridgeCommand.OptionValue.class).name().equals(option.getName())) {
-                            args.add(parameters.indexOf(parameter), Utilities.getOptionValue(option));
-                            break;
-                        }
-                    }
-                }
+                args.add(event);
+                for(Parameter parameter : parameters) {
+                    if(!parameter.isAnnotationPresent(BridgeCommand.OptionValue.class)) continue;
+                    BridgeCommand.OptionValue option = parameter.getAnnotation(BridgeCommand.OptionValue.class);
+                    if(event.getOption(option.name()) == null) {
+                        args.add(null);
+                    } else {
+                        args.add(parameter.getType().cast(Utilities.getOptionValue(event.getOption(option.name()))));
+                    }                }
                 try {
                     command.invoke(command.getDeclaringClass(), args.toArray());
                 } catch (IllegalAccessException | InvocationTargetException e) {
@@ -142,20 +139,21 @@ public class SlashCommandAnnotationHandler extends ListenerAdapter {
                 }
                 if (options.length == 0) {
                     try {
-                        subCommand.invoke(subCommand.getDeclaringClass(), List.of(event.getInteraction()).toArray());
+                        subCommand.invoke(subCommand.getDeclaringClass(), List.of(event).toArray());
                     } catch (IllegalAccessException | InvocationTargetException e) {
                         throw new RuntimeException(e);
                     }
                 } else {
                     List<Parameter> parameters = Arrays.stream(subCommand.getParameters()).toList();
                     List<Object> args = new ArrayList<>();
-                    args.add(event.getInteraction());
-                    for (OptionMapping option : event.getOptions()) {
-                        for (Parameter parameter : parameters) {
-                            if (parameter.isAnnotationPresent(BridgeCommand.OptionValue.class) && parameter.getAnnotation(BridgeCommand.OptionValue.class).name().equals(option.getName())) {
-                                args.add(parameters.indexOf(parameter), Utilities.getOptionValue(option));
-                                break;
-                            }
+                    args.add(event);
+                    for(Parameter parameter : parameters) {
+                        if(!parameter.isAnnotationPresent(BridgeCommand.OptionValue.class)) return;
+                        BridgeCommand.OptionValue option = parameter.getAnnotation(BridgeCommand.OptionValue.class);
+                        if(event.getOption(option.name()) == null) {
+                            args.add(null);
+                        } else {
+                            args.add(parameter.getType().cast(Utilities.getOptionValue(event.getOption(option.name()))));
                         }
                     }
                     try {

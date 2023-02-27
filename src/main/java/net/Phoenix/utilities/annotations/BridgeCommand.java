@@ -23,6 +23,7 @@ public @interface BridgeCommand {
         String name(); // Name of the option
         String description(); // Description of the option
         boolean required() default false; // Whether the option is required
+        boolean autocomplete() default false;
         String[] choices() default {}; // Possible choices for the option
     }
     @Retention(RetentionPolicy.RUNTIME)
