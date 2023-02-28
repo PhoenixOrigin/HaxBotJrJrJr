@@ -2,11 +2,11 @@ package net.Phoenix.features;
 
 import net.Phoenix.utilities.Utilities;
 import net.Phoenix.utilities.annotations.BridgeCommand;
+import net.Phoenix.utilities.annotations.Event;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.hooks.SubscribeEvent;
 import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import org.jetbrains.annotations.NotNull;
@@ -17,34 +17,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static net.Phoenix.Main.database;
-
-/*
-OptionData data = new OptionData(OptionType.STRING, "name", "The name of the signup role", true, true);
-
-        SlashCommandData command = Commands.slash("signup", "SignupRoles");
-        SubcommandData ping = new SubcommandData("ping", "Ping a signup role");
-        ping.addOptions(data);
-        ping.addOption(OptionType.STRING, "message", "The message you would like to give");
-
-        SubcommandData createPing = new SubcommandData("create", "Create a ping role");
-        createPing.addOption(OptionType.STRING, "name", "The name of the signup role", true);
-
-        SubcommandData leavePing = new SubcommandData("leave", "Leave a ping role");
-        leavePing.addOption(OptionType.STRING, "name", "The name of the signup role", true, true);
-
-        SubcommandData registerPing = new SubcommandData("port", "Port a ping role");
-        registerPing.addOption(OptionType.STRING, "name", "The name of the signup role", true);
-        registerPing.addOption(OptionType.ROLE, "role", "The existing role to turn into a signup role", true);
-
-        SubcommandData signupPing = new SubcommandData("join", "Join a signup role");
-        signupPing.addOptions(data);
-
-        SubcommandData deletePing = new SubcommandData("delete", "Delete a ping role");
-        deletePing.addOptions(data);
-
-        command.addSubcommands(createPing, registerPing, signupPing, deletePing, ping);
-
- */
 
 @BridgeCommand(name = "signup",
         description = "Multiple signup commands :)",
@@ -66,8 +38,7 @@ OptionData data = new OptionData(OptionType.STRING, "name", "The name of the sig
                                 @BridgeCommand.CommandOption(type = OptionType.STRING,
                                         name = "name",
                                         description = "The name of the signup role",
-                                        required = true,
-                                        autocomplete = true
+                                        required = true
                                 )
                         }
                 ),
@@ -123,8 +94,8 @@ OptionData data = new OptionData(OptionType.STRING, "name", "The name of the sig
 )
 public class SignupFeature {
 
-    @SubscribeEvent
-    public static void handleAutoComplete(@NotNull CommandAutoCompleteInteractionEvent event) {
+    @Event(eventType = CommandAutoCompleteInteractionEvent.class)
+    public void onCommandAutoCompleteInteraction(@NotNull CommandAutoCompleteInteractionEvent event) {
         try {
             if (event.getName().equals("signup") && event.getFocusedOption().getName().equals("name")) {
                 List<String> words = new ArrayList<>();
@@ -161,8 +132,8 @@ public class SignupFeature {
     public static void createRole(SlashCommandInteractionEvent event){
         event.deferReply(true).queue();
 
-        if (Utilities.hasHigherRole(event.getMember(), event.getGuild().getRolesByName("Cadet", true).get(0))) {
-            event.reply("You can't use this >:(").queue();
+        if (!Utilities.hasHigherRole(event.getMember(), event.getGuild().getRolesByName("Cadet", true).get(0))) {
+            event.getHook().editOriginal("You can't use this >:(").queue();
             return;
         }
         try (PreparedStatement statement = database.prepareStatement("INSERT INTO signup (name, users) VALUES (?, ?::BIGINT[])")) {
@@ -180,8 +151,8 @@ public class SignupFeature {
     public static void portRole(SlashCommandInteractionEvent event){
         event.deferReply(true).queue();
 
-        if (Utilities.hasHigherRole(event.getMember(), event.getGuild().getRolesByName("Cosmonaut", true).get(0))) {
-            event.reply("You can't use this >:(").queue();
+        if (!Utilities.hasHigherRole(event.getMember(), event.getGuild().getRolesByName("Cosmonaut", true).get(0))) {
+            event.getHook().editOriginal("You can't use this >:(").queue();
             return;
         }
         Role toPort = event.getOption("role").getAsRole();
@@ -221,8 +192,8 @@ public class SignupFeature {
     public static void delete(SlashCommandInteractionEvent event) {
         event.deferReply(true).queue();
 
-        if (Utilities.hasHigherRole(event.getMember(), event.getGuild().getRolesByName("Cosmonaut", true).get(0))) {
-            event.reply("You can't use this >:(").queue();
+        if (!Utilities.hasHigherRole(event.getMember(), event.getGuild().getRolesByName("Cosmonaut", true).get(0))) {
+            event.getHook().editOriginal("You can't use this >:(").queue();
             return;
         }
         try {
@@ -238,8 +209,8 @@ public class SignupFeature {
     public static void ping(SlashCommandInteractionEvent event){
         event.deferReply(true).queue();
 
-        if (Utilities.hasHigherRole(event.getMember(), event.getGuild().getRolesByName("Milkyway resident", true).get(0))) {
-            event.reply("You can't use this >:(").queue();
+        if (!Utilities.hasHigherRole(event.getMember(), event.getGuild().getRolesByName("Milkyway resident", true).get(0))) {
+            event.getHook().editOriginal("You can't use this >:(").queue();
             return;
         }
         List<Long> userList = new ArrayList<>(); // create a new ArrayList to store the values

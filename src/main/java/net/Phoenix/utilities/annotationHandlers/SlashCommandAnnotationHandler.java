@@ -24,7 +24,6 @@ public class SlashCommandAnnotationHandler extends ListenerAdapter {
     public static void registerCommands (JDA jda) {
         Reflections reflections = new Reflections("net.Phoenix");
         Set<Class<?>> annotated = reflections.getTypesAnnotatedWith(BridgeCommand.class);
-        System.out.println(annotated);
         for (Class<?> c : annotated) {
             for (Method method : c.getDeclaredMethods()) {
                 if (!method.isAnnotationPresent(BridgeCommand.invoke.class)) continue;
@@ -32,15 +31,6 @@ public class SlashCommandAnnotationHandler extends ListenerAdapter {
                 SlashCommandData commandData = Commands.slash(commandAnnotation.name(), commandAnnotation.description());
                 for (BridgeCommand.CommandOption commandOption : commandAnnotation.options()) {
                     commandData.addOptions(new OptionData(commandOption.type(), commandOption.name(), commandOption.description(), commandOption.required(), commandOption.autocomplete()));
-                }
-                for (BridgeCommand.SubCommand subCommand : commandAnnotation.subcommands()) {
-                    SubcommandData data = new SubcommandData(subCommand.name(), subCommand.description());
-
-                    for (BridgeCommand.CommandOption commandOption : subCommand.options()) {
-                        data.addOptions(new OptionData(commandOption.type(), commandOption.name(), commandOption.description(), commandOption.required(), commandOption.autocomplete()));
-                    }
-
-                    commandData.addSubcommands(data);
                 }
                 jda.upsertCommand(commandData).queue();
                 jda.addEventListener(new BridgeCommandListener(method, commandAnnotation));
@@ -52,13 +42,9 @@ public class SlashCommandAnnotationHandler extends ListenerAdapter {
                 for (Method m : c.getDeclaredMethods()) {
                     if(m.isAnnotationPresent(BridgeCommand.SubCommand.class)) subCommands.add(m);
                 }
-
                 BridgeCommand commandAnnotation = method.getDeclaringClass().getAnnotation(BridgeCommand.class);
-
+                System.out.println(commandAnnotation.name());
                 SlashCommandData commandData = Commands.slash(commandAnnotation.name(), commandAnnotation.description());
-                for (BridgeCommand.CommandOption commandOption : commandAnnotation.options()) {
-                    commandData.addOptions(new OptionData(commandOption.type(), commandOption.name(), commandOption.description(), commandOption.required(), commandOption.autocomplete()));
-                }
                 for (BridgeCommand.SubCommand subCommand : commandAnnotation.subcommands()) {
                     SubcommandData data = new SubcommandData(subCommand.name(), subCommand.description());
 
@@ -70,9 +56,12 @@ public class SlashCommandAnnotationHandler extends ListenerAdapter {
                 }
 
                 jda.upsertCommand(commandData).queue();
+                System.out.println("upserted");
                 jda.addEventListener(new SubBridgeCommandListener(commandAnnotation, subCommands));
+                break;
             }
         }
+
     }
 
     public static class BridgeCommandListener extends ListenerAdapter {
@@ -127,10 +116,11 @@ public class SlashCommandAnnotationHandler extends ListenerAdapter {
 
         @Override
         public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
+            event.deferReply(true).queue();
             if (!event.getName().equals(annotation.name())) return;
             for (Method subCommand : subCommands) {
                 if (!subCommand.isAnnotationPresent(BridgeCommand.SubCommand.class) || !subCommand.getAnnotation(BridgeCommand.SubCommand.class).name().equals(event.getSubcommandName())) {
-                    return;
+                    continue;
                 }
 
                 BridgeCommand.CommandOption[] options = null;
@@ -148,7 +138,7 @@ public class SlashCommandAnnotationHandler extends ListenerAdapter {
                     List<Object> args = new ArrayList<>();
                     args.add(event);
                     for(Parameter parameter : parameters) {
-                        if(!parameter.isAnnotationPresent(BridgeCommand.OptionValue.class)) return;
+                        if(!parameter.isAnnotationPresent(BridgeCommand.OptionValue.class)) continue;
                         BridgeCommand.OptionValue option = parameter.getAnnotation(BridgeCommand.OptionValue.class);
                         if(event.getOption(option.name()) == null) {
                             args.add(null);

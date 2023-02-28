@@ -2,11 +2,11 @@ package net.Phoenix.features;
 
 import com.google.common.base.Splitter;
 import net.Phoenix.Main;
-import net.Phoenix.utilities.Utilities;
 import net.Phoenix.handlers.ConfigHandler;
+import net.Phoenix.utilities.Utilities;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
-import net.dv8tion.jda.api.hooks.SubscribeEvent;
 import net.dv8tion.jda.api.utils.FileUpload;
+import net.Phoenix.utilities.annotations.Event;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -17,7 +17,7 @@ import java.util.concurrent.ExecutionException;
 
 public class GuildMemberJoinFeature {
 
-    @SubscribeEvent
+    @Event(eventType = GuildMemberJoinEvent.class)
     public static void handleEvent(GuildMemberJoinEvent event) {
         long errorChannel = ConfigHandler.getConfigLong("error_channel");
         Image icon = null;
