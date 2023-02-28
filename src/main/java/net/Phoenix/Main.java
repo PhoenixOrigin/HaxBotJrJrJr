@@ -56,7 +56,7 @@ public class Main {
         builder.enableIntents(GatewayIntent.GUILD_MEMBERS);
 
         // Can be changed to literally anything
-        builder.setActivity(Activity.watching("Watching over " + ConfigHandler.getConfigString("guild_name")));
+        builder.setActivity(Activity.watching(ConfigHandler.getConfigString("guild_name")));
         // Building
         jda = builder.build();
         ///jda.updateCommands().queue();

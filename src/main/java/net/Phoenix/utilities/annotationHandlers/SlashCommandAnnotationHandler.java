@@ -43,7 +43,6 @@ public class SlashCommandAnnotationHandler extends ListenerAdapter {
                     if(m.isAnnotationPresent(BridgeCommand.SubCommand.class)) subCommands.add(m);
                 }
                 BridgeCommand commandAnnotation = method.getDeclaringClass().getAnnotation(BridgeCommand.class);
-                System.out.println(commandAnnotation.name());
                 SlashCommandData commandData = Commands.slash(commandAnnotation.name(), commandAnnotation.description());
                 for (BridgeCommand.SubCommand subCommand : commandAnnotation.subcommands()) {
                     SubcommandData data = new SubcommandData(subCommand.name(), subCommand.description());
@@ -56,7 +55,6 @@ public class SlashCommandAnnotationHandler extends ListenerAdapter {
                 }
 
                 jda.upsertCommand(commandData).queue();
-                System.out.println("upserted");
                 jda.addEventListener(new SubBridgeCommandListener(commandAnnotation, subCommands));
                 break;
             }
@@ -116,7 +114,6 @@ public class SlashCommandAnnotationHandler extends ListenerAdapter {
 
         @Override
         public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
-            event.deferReply(true).queue();
             if (!event.getName().equals(annotation.name())) return;
             for (Method subCommand : subCommands) {
                 if (!subCommand.isAnnotationPresent(BridgeCommand.SubCommand.class) || !subCommand.getAnnotation(BridgeCommand.SubCommand.class).name().equals(event.getSubcommandName())) {

@@ -6,7 +6,10 @@ import net.Phoenix.handlers.ConfigHandler;
 import net.Phoenix.utilities.TableBuilder;
 import net.Phoenix.utilities.annotations.BridgeCommand;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.channel.concrete.PrivateChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 
 import java.awt.*;
@@ -25,10 +28,10 @@ import java.util.stream.Collectors;
         }
 )
 public class SoulPointCommand {
-
     @BridgeCommand.invoke
     public static void handleEvent(SlashCommandInteractionEvent event, @BridgeCommand.OptionValue(name = "offset") Integer offset, @BridgeCommand.OptionValue(name = "count") Integer count ) {
-        event.deferReply(true).queue();
+
+        event.deferReply(true).queue(resp -> {}, error -> {});
         // Creating a map that keeps order
         LinkedHashMap<AthenaServerList.Server, Long> serverSoulPoints = new LinkedHashMap<>();
         // Querying wynntils athena api to get online servers
@@ -49,12 +52,17 @@ public class SoulPointCommand {
         count = count == null ? 10 : count;
 
         // Some complicatedish sorting + limiting to number
-        serverSoulPoints =
-                serverSoulPoints.entrySet().stream()
-                        .sorted(Map.Entry.comparingByValue())
-                        .limit(count)
-                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
-                                (e1, e2) -> e1, LinkedHashMap::new));
+        try {
+            serverSoulPoints =
+                    serverSoulPoints.entrySet().stream()
+                            .sorted(Map.Entry.comparingByValue())
+                            .limit(count)
+                            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
+                                    (e1, e2) -> e1, LinkedHashMap::new));
+        } catch (IllegalArgumentException e) {
+            event.getHook().editOriginal("No negative counts ;)").queue();
+            return;
+        }
 
         // Making embed builder
         EmbedBuilder builder = new EmbedBuilder();
@@ -83,7 +91,13 @@ public class SoulPointCommand {
                 .stream()
                 .map(e -> new String[]{e.getKey(),e.getValue()})
                 .toArray(String[][]::new));
-        sb.append(table.build());
+
+        try {
+            sb.append(table.build());
+        } catch (IllegalArgumentException e) {
+            event.getHook().editOriginal("Please put a value greater than 1 :)").queue();
+            return;
+        }
         // Closing block
         sb.append("```");
         // Adding servers

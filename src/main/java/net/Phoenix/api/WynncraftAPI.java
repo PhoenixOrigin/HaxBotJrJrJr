@@ -15,7 +15,7 @@ import java.util.concurrent.Future;
 public class WynncraftAPI {
 
 
-    public Player getPlayerStats(String player) throws IOException {
+    public static Player getPlayerStats(String player) throws IOException {
         WynncraftEndpoints.PLAYER.consumeLimit();
         String url = WynncraftEndpoints.PLAYER.getUrl().replace("{PLAYER}", player);
         String json = Utilities.queryAPI(url);

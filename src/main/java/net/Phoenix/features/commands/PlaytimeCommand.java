@@ -1,6 +1,8 @@
 package net.Phoenix.features.commands;
 
 import net.Phoenix.Main;
+import net.Phoenix.api.WynncraftAPI;
+import net.Phoenix.api.objects.Player;
 import net.Phoenix.utilities.Utilities;
 import net.Phoenix.api.MojangAPI;
 import net.Phoenix.api.objects.MojangUUID;
@@ -31,24 +33,12 @@ public class PlaytimeCommand {
     @BridgeCommand.invoke
     public static void handleEvent(SlashCommandInteractionEvent event) {
         event.deferReply(true).queue();
+
         Connection database = Main.database;
         String username = event.getOption("name").getAsString();
-        MojangUUID mojangUUID = null;
-        try {
-            mojangUUID = MojangAPI.getPlayerUUID(username);
-        } catch(IOException | NullPointerException e){
-            EmbedBuilder builder = new EmbedBuilder();
-            builder.setTitle(username + "'s playtime");
-            builder.setDescription("Monthly Playtime: 00h00m\n" +
-                    "Weekly Playtime: 00h00m\n" +
-                    "Weekly Playtime: 00h00m");
-            builder.setColor(Color.BLACK);
-            event.getHook().editOriginalEmbeds(builder.build()).queue();
-            return;
-        }
-        UUID uuid = mojangUUID.getUuid();
+        UUID uuid = Utilities.getPlayerUUID(username);
         EmbedBuilder builder = new EmbedBuilder();
-        builder.setTitle(username + "'s playtime");
+        builder.setTitle(username.replace("_", "\\_").replace("*", "\\*") + "'s playtime");
         String message = "";
         try {
             PreparedStatement monthlyPlaytimeRequest = database.prepareStatement("SELECT SUM(playtime) FROM playtime WHERE uuid = ? AND timestamp > NOW() - INTERVAL '1 MONTH';");
