@@ -38,9 +38,9 @@ public class Main {
         if(ConfigHandler.getConfigBool("database")){
             Class.forName("org.postgresql.Driver");
             database = DriverManager.getConnection("jdbc:postgresql://localhost:5432/" + ConfigHandler.getConfigString("dbname"), ConfigHandler.getConfigString("dbusername"), ConfigHandler.getConfigString("dbpassword"));
-            PreparedStatement statement = database.prepareStatement("CREATE TABLE IF NOT EXISTS playtime (uuid UUID PRIMARY KEY NOT NULL, playtime int NOT NULL, timestamp timestamp);");
+            PreparedStatement statement = database.prepareStatement("CREATE TABLE IF NOT EXISTS playtime (uuid UUID NOT NULL, playtime int NOT NULL, timestamp timestamp);");
             statement.execute();
-            PreparedStatement statement2 = database.prepareStatement("CREATE TABLE IF NOT EXISTS uuidcache (uuid UUID PRIMARY KEY NOT NULL, username TEXT NOT NULL);");
+            PreparedStatement statement2 = database.prepareStatement("CREATE TABLE IF NOT EXISTS uuidcache (uuid UUID NOT NULL, username TEXT NOT NULL);");
             statement2.execute();
             PreparedStatement statement3 = database.prepareStatement("CREATE TABLE IF NOT EXISTS signup (name TEXT PRIMARY KEY NOT NULL, users BIGINT[] NOT NULL);");
             statement3.execute();
@@ -59,7 +59,6 @@ public class Main {
         builder.setActivity(Activity.watching(ConfigHandler.getConfigString("guild_name")));
         // Building
         jda = builder.build();
-        ///jda.updateCommands().queue();
         jda.addEventListener(multiPagedEmbedHandler);
         jda.addEventListener(multiPagedMessageHandler);
         SlashCommandAnnotationHandler.registerCommands(jda);

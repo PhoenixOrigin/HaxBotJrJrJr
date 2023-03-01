@@ -20,12 +20,15 @@ dependencies {
     implementation 'ch.qos.logback:logback-classic:1.2.9'
     implementation group: 'org.postgresql', name: 'postgresql', version: '42.5.1'
     implementation 'org.reflections:reflections:0.10.2'
-    implementation 'com.google.protobuf:protobuf-java:4.0.0-rc-2'
-    implementation 'net.sf.phat:sphinx4-core:5prealpha'
 }
 
 test {
     useJUnitPlatform()
 }
+
+shadowJar {
+    archiveFileName = "haxbot.jar"
+}
+
 sourceCompatibility = JavaVersion.VERSION_18
 targetCompatibility = JavaVersion.VERSION_18

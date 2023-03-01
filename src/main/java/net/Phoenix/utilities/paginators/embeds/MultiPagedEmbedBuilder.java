@@ -98,6 +98,11 @@ public class MultiPagedEmbedBuilder {
         return this;
     }
 
+    public MultiPagedEmbedBuilder addEmbed(MessageEmbed embed) {
+        embeds.add(embed);
+        return this;
+    }
+
 
     public MultiPagedEmbed create() {
         return new MultiPagedEmbed(

@@ -95,7 +95,7 @@ public class MultiPagedEmbed {
             startPage();
         } else if (name.contains(end.getName())) {
             endPage();
-        } else if (name.contains(end.getName())) {
+        } else if (name.contains(finish.getName())) {
             if (deleteOnFinish) {
                 message.delete().queue();
             } else {

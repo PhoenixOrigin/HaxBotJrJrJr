@@ -29,7 +29,11 @@ import static net.Phoenix.Main.database;
                                     description = "The name of the signup role",
                                     required = true,
                                     autocomplete = true
-                            )
+                            ),
+                                @BridgeCommand.CommandOption(type = OptionType.STRING,
+                                        name = "message",
+                                        description = "The message to send :)"
+                                )
                         }
                 ),
                 @BridgeCommand.SubCommand(name = "create",
@@ -59,8 +63,7 @@ import static net.Phoenix.Main.database;
                                 @BridgeCommand.CommandOption(type = OptionType.STRING,
                                         name = "name",
                                         description = "The name of the signup role",
-                                        required = true,
-                                        autocomplete = true
+                                        required = true
                                 ),
                                 @BridgeCommand.CommandOption(type = OptionType.ROLE,
                                         name = "role",

@@ -5,10 +5,8 @@ import net.Phoenix.utilities.annotations.BridgeCommand;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import net.dv8tion.jda.api.interactions.commands.build.Commands;
-import net.dv8tion.jda.api.interactions.commands.build.OptionData;
-import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
-import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
+import net.dv8tion.jda.api.interactions.commands.Command;
+import net.dv8tion.jda.api.interactions.commands.build.*;
 import org.reflections.Reflections;
 
 import java.lang.reflect.InvocationTargetException;
@@ -24,6 +22,7 @@ public class SlashCommandAnnotationHandler extends ListenerAdapter {
     public static void registerCommands (JDA jda) {
         Reflections reflections = new Reflections("net.Phoenix");
         Set<Class<?>> annotated = reflections.getTypesAnnotatedWith(BridgeCommand.class);
+        List<CommandData> commands = new ArrayList<>();
         for (Class<?> c : annotated) {
             for (Method method : c.getDeclaredMethods()) {
                 if (!method.isAnnotationPresent(BridgeCommand.invoke.class)) continue;
@@ -32,7 +31,7 @@ public class SlashCommandAnnotationHandler extends ListenerAdapter {
                 for (BridgeCommand.CommandOption commandOption : commandAnnotation.options()) {
                     commandData.addOptions(new OptionData(commandOption.type(), commandOption.name(), commandOption.description(), commandOption.required(), commandOption.autocomplete()));
                 }
-                jda.upsertCommand(commandData).queue();
+                commands.add(commandData);
                 jda.addEventListener(new BridgeCommandListener(method, commandAnnotation));
             }
 
@@ -54,12 +53,12 @@ public class SlashCommandAnnotationHandler extends ListenerAdapter {
                     commandData.addSubcommands(data);
                 }
 
-                jda.upsertCommand(commandData).queue();
+                commands.add(commandData);
                 jda.addEventListener(new SubBridgeCommandListener(commandAnnotation, subCommands));
                 break;
             }
         }
-
+        jda.updateCommands().addCommands(commands).queue();
     }
 
     public static class BridgeCommandListener extends ListenerAdapter {

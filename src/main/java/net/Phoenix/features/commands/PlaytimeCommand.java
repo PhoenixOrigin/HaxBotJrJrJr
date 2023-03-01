@@ -41,7 +41,10 @@ public class PlaytimeCommand {
         builder.setTitle(username.replace("_", "\\_").replace("*", "\\*") + "'s playtime");
         String message = "";
         try {
-            PreparedStatement monthlyPlaytimeRequest = database.prepareStatement("SELECT SUM(playtime) FROM playtime WHERE uuid = ? AND timestamp > NOW() - INTERVAL '1 MONTH';");
+            PreparedStatement monthlyPlaytimeRequest = database.prepareStatement("SELECT SUM(playtime) " +
+                    "FROM playtime " +
+                    "WHERE uuid = ? " +
+                    " AND DATE_TRUNC('month', timestamp) = DATE_TRUNC('month', CURRENT_DATE);");
             monthlyPlaytimeRequest.setObject(1, uuid);
             ResultSet monthlyPlaytime = monthlyPlaytimeRequest.executeQuery();
             if(!monthlyPlaytime.next()){
@@ -50,7 +53,10 @@ public class PlaytimeCommand {
             }
             message += "Monthly Playtime: " + LocalTime.MIN.plus(Duration.ofMinutes(monthlyPlaytime.getInt(1))).toString().replace(":", "h") + "m\n";
 
-            PreparedStatement weeklyPlaytimeRequest = database.prepareStatement("SELECT SUM(playtime) FROM playtime WHERE uuid = ? AND timestamp > NOW() - INTERVAL '1 WEEK';");
+            PreparedStatement weeklyPlaytimeRequest =  database.prepareStatement("SELECT SUM(playtime) " +
+                    "FROM playtime " +
+                    "WHERE uuid = ? " +
+                    " AND DATE_TRUNC('week', timestamp) = DATE_TRUNC('week', CURRENT_DATE);");
             weeklyPlaytimeRequest.setObject(1, uuid);
             ResultSet weeklyPlaytime = weeklyPlaytimeRequest.executeQuery();
             if(!weeklyPlaytime.next()){
@@ -59,7 +65,10 @@ public class PlaytimeCommand {
             }
             message += "Weekly Playtime: " + LocalTime.MIN.plus(Duration.ofMinutes(weeklyPlaytime.getInt(1))).toString().replace(":", "h") + "m\n";
 
-            PreparedStatement dailyPlaytimeRequest = database.prepareStatement("SELECT SUM(playtime) FROM playtime WHERE uuid = ? AND timestamp > NOW() - INTERVAL '1 DAY';");
+            PreparedStatement dailyPlaytimeRequest =  database.prepareStatement("SELECT SUM(playtime) " +
+                    "FROM playtime " +
+                    "WHERE uuid = ? " +
+                    " AND DATE_TRUNC('day', timestamp) = DATE_TRUNC('day', CURRENT_DATE);");
             dailyPlaytimeRequest.setObject(1, uuid);
             ResultSet dailyPlaytime = dailyPlaytimeRequest.executeQuery();
             if(!dailyPlaytime.next()){
