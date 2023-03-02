@@ -13,9 +13,11 @@ public class MultiPagedEmbedHandler extends ListenerAdapter {
 
     @Override
     public void onButtonInteraction(@NotNull ButtonInteractionEvent event) {
-        MultiPagedEmbed embed = messages.get(event.getMessage().getIdLong());
-        embed.movePage(event.getButton());
-        event.reply("Moved to page: " + (embed.page + 1)).setEphemeral(true).queue();
+        try{
+            MultiPagedEmbed embed = messages.get(event.getMessage().getIdLong());
+            embed.movePage(event.getButton());
+            event.reply("Moved to page: " + (embed.page + 1)).setEphemeral(true).queue();
+        } catch (NullPointerException ignored) {}
     }
 
 }

@@ -31,10 +31,7 @@ import java.util.stream.Collectors;
                     description = "The guild to extract activity for :D"),
                 @BridgeCommand.CommandOption(type = OptionType.INTEGER,
                         name = "time",
-                        description = "The time the player needs less than"),
-                @BridgeCommand.CommandOption(type = OptionType.INTEGER,
-                        name = "weeks",
-                        description = "The weeks ago of inactivity")
+                        description = "The time the player needs less than")
         }
 )
 public class Activity {
@@ -43,11 +40,8 @@ public class Activity {
     @BridgeCommand.invoke
     public static void handleCommand(SlashCommandInteractionEvent event,
                                      @BridgeCommand.OptionValue(name = "guild") String guildName,
-                                     @BridgeCommand.OptionValue(name = "time") Integer time,
-                                     @BridgeCommand.OptionValue(name = "weeks") Integer weeks){
-        if(weeks == null){
-            weeks = 1;
-        }
+                                     @BridgeCommand.OptionValue(name = "time") Integer time){
+
         if(guildName == null) {
             guildName = "HackForums";
         }
@@ -56,14 +50,13 @@ public class Activity {
         }
 
         HashMap<UUID, String> uuids = getGuildUUIDS(guildName);
-        String sqlQuery = String.format("""
-                SELECT uuid, SUM(playtime)
-                FROM playtime
-                WHERE uuid IN (?)
-                    AND timestamp >= DATE_TRUNC('week', CURRENT_DATE - INTERVAL '%d week', 'Monday')
-                    AND timestamp < DATE_TRUNC('week', CURRENT_DATE - INTERVAL '%d week', 'Monday')
+
+        String sqlQuery = """
+                SELECT uuid, SUM(playtime) FROM playtime
+                WHERE timestamp BETWEEN date_trunc('week', NOW() - INTERVAL '1 week') + INTERVAL '1 day' AND NOW()
+                AND uuid = ANY(?)
                 GROUP BY uuid;
-                """, weeks + 1, weeks);
+                """;
 
         LinkedHashMap<UUID, Integer> map = new LinkedHashMap<>();
 
@@ -86,7 +79,6 @@ public class Activity {
             }
         }
         HashMap<UUID, Integer> readOnly = (HashMap<UUID, Integer>) map.clone();
-
         for(Map.Entry<UUID, Integer> entry : readOnly.entrySet()) {
             if(entry.getValue() >= time){
                 map.remove(entry.getKey());

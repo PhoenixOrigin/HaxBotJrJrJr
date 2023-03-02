@@ -58,17 +58,21 @@ public class MultiPagedEmbed {
     }
 
     public void nextPage() {
-        if (page == embeds.size()) return;
-
-        page += 1;
+        if (page == embeds.size()) {
+            page = 0;
+        } else {
+            page += 1;
+        }
 
         message.editMessageEmbeds(embeds.get(page)).queue();
     }
 
     public void previousPage() {
-        if (page == 0) return;
-
-        page -= 1;
+        if (page == 0) {
+            page = embeds.size() - 1;
+        } else {
+            page -= 1;
+        }
 
         message.editMessageEmbeds(embeds.get(page)).queue();
     }

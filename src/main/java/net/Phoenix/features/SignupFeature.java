@@ -1,5 +1,6 @@
 package net.Phoenix.features;
 
+import com.iwebpp.crypto.TweetNaclFast;
 import net.Phoenix.utilities.Utilities;
 import net.Phoenix.utilities.annotations.BridgeCommand;
 import net.Phoenix.utilities.annotations.Event;
@@ -9,10 +10,18 @@ import net.dv8tion.jda.api.events.interaction.command.CommandAutoCompleteInterac
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
+import org.apache.commons.collections4.functors.InstantiateFactory;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.*;
+import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -96,6 +105,8 @@ import static net.Phoenix.Main.database;
         }
 )
 public class SignupFeature {
+
+    private static HashMap<String, Instant> timer = new HashMap<>();
 
     @Event(eventType = CommandAutoCompleteInteractionEvent.class)
     public void onCommandAutoCompleteInteraction(@NotNull CommandAutoCompleteInteractionEvent event) {
@@ -211,6 +222,27 @@ public class SignupFeature {
     @BridgeCommand.SubCommand(name = "ping")
     public static void ping(SlashCommandInteractionEvent event){
         event.deferReply(true).queue();
+        String name = event.getOption("name").getAsString();
+        try {
+            if (ChronoUnit.MINUTES.between(timer.get(name), Instant.now()) >= 3) {
+                timer.put(name, Instant.now());
+            } else {
+                Duration duration = Duration.ofMinutes(3).minus(Duration.between(timer.get(name), Instant.now()));
+                long minutes = duration.toMinutes();
+                long seconds = duration.minusMinutes(minutes).getSeconds();
+
+                event.getHook()
+                        .editOriginal(String.format(
+                                "This signup role is on cooldown! Please wait %dm %ds!",
+                                minutes,
+                                seconds
+                        ))
+                        .queue();
+                return;
+            }
+        } catch (NullPointerException e) {
+            timer.put(name, Instant.now());
+        }
 
         if (!Utilities.hasHigherRole(event.getMember(), event.getGuild().getRolesByName("Milkyway resident", true).get(0))) {
             event.getHook().editOriginal("You can't use this >:(").queue();
