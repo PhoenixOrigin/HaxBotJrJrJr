@@ -50,7 +50,16 @@ public class Activity {
         }
 
         HashMap<UUID, String> uuids = getGuildUUIDS(guildName);
+        /*
+        SELECT uuid, SUM(playtime) FROM playtime
+WHERE timestamp BETWEEN
+        date_trunc('week', NOW() - INTERVAL '1 week') + INTERVAL '1 day'
+    AND date_trunc('week', NOW()) + INTERVAL '1 day'
+  AND uuid = ANY(?)
+GROUP BY uuid;
 
+TO BE RELEASED ON WEDNESDAY (enough data collected)
+         */
         String sqlQuery = """
                 SELECT uuid, SUM(playtime) FROM playtime
                 WHERE timestamp BETWEEN date_trunc('week', NOW() - INTERVAL '1 week') + INTERVAL '1 day' AND NOW()
