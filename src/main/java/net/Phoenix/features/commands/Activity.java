@@ -19,16 +19,16 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.time.LocalTime;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @BridgeCommand(name = "activity",
         description = "Get the (in)activity of a guild",
         options = {
-            @BridgeCommand.CommandOption(type = OptionType.STRING,
-                    name = "guild",
-                    description = "The guild to extract activity for :D"),
+                @BridgeCommand.CommandOption(type = OptionType.STRING,
+                        name = "guild",
+                        description = "The guild to extract activity for :D"),
                 @BridgeCommand.CommandOption(type = OptionType.INTEGER,
                         name = "time",
                         description = "The time the player needs less than")
@@ -40,9 +40,8 @@ public class Activity {
     @BridgeCommand.invoke
     public static void handleCommand(SlashCommandInteractionEvent event,
                                      @BridgeCommand.OptionValue(name = "guild") String guildName,
-                                     @BridgeCommand.OptionValue(name = "time") Integer time){
-
-        if(guildName == null) {
+                                     @BridgeCommand.OptionValue(name = "time") Integer time) {
+        if (guildName == null) {
             guildName = "HackForums";
         }
         if (time == null) {
@@ -61,10 +60,29 @@ GROUP BY uuid;
 TO BE RELEASED ON WEDNESDAY (enough data collected)
          */
         String sqlQuery = """
-                SELECT uuid, SUM(playtime) FROM playtime
-                WHERE timestamp BETWEEN date_trunc('week', NOW() - INTERVAL '1 week') + INTERVAL '1 day' AND NOW()
-                AND uuid = ANY(?)
-                GROUP BY uuid;
+                WITH week_list AS (
+                        SELECT generate_series(1, 4) AS week_number
+                ), weekly_playtime AS (
+                        SELECT
+                        uuid,
+                        week_number,
+                        SUM(playtime) AS total_playtime
+                        FROM
+                        playtime
+                            INNER JOIN week_list ON timestamp BETWEEN date_trunc('week', NOW() - INTERVAL '1 week' * week_number) + INTERVAL '1 day'
+                                 AND date_trunc('week', NOW() - INTERVAL '1 week' * (week_number - 1)) + INTERVAL '1 day'
+                        GROUP BY
+                            uuid,
+                        week_number
+                )
+                SELECT
+                    uuid
+                FROM
+                    weekly_playtime
+                WHERE
+                    week_number <= (SELECT max(week_number) FROM week_list)
+                    AND total_playtime < 120
+                    AND uuid = ANY(?);
                 """;
 
         LinkedHashMap<UUID, Integer> map = new LinkedHashMap<>();
@@ -82,14 +100,14 @@ TO BE RELEASED ON WEDNESDAY (enough data collected)
             throw new RuntimeException(e);
         }
 
-        for(UUID uuid : uuids.keySet()){
-            if(!map.containsKey(uuid)) {
+        for (UUID uuid : uuids.keySet()) {
+            if (!map.containsKey(uuid)) {
                 map.put(uuid, 0);
             }
         }
         HashMap<UUID, Integer> readOnly = (HashMap<UUID, Integer>) map.clone();
-        for(Map.Entry<UUID, Integer> entry : readOnly.entrySet()) {
-            if(entry.getValue() >= time){
+        for (Map.Entry<UUID, Integer> entry : readOnly.entrySet()) {
+            if (entry.getValue() >= time) {
                 map.remove(entry.getKey());
             }
         }
@@ -98,13 +116,13 @@ TO BE RELEASED ON WEDNESDAY (enough data collected)
                 .stream()
                 .sorted(Map.Entry.comparingByValue())
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue,
-                (e1, e2) -> e1, LinkedHashMap::new));
+                        (e1, e2) -> e1, LinkedHashMap::new));
 
         MultiPagedEmbedBuilder builder = new MultiPagedEmbedBuilder()
                 .setChannel(event.getMessageChannel())
                 .deleteOnFinish(false);
 
-        for(Map<UUID, Integer> hashMap : splitMap(map, 10)){
+        for (Map<UUID, Integer> hashMap : splitMap(map, 10)) {
             TableBuilder table = new TableBuilder()
                     .addHeaders("Username", "Playtime")
                     .setName(guildName + " activity")
@@ -112,13 +130,13 @@ TO BE RELEASED ON WEDNESDAY (enough data collected)
                     .frame(true);
             Map<String, String> rows = new LinkedHashMap<>();
 
-            for(Map.Entry<UUID, Integer> entry : hashMap.entrySet()) {
+            for (Map.Entry<UUID, Integer> entry : hashMap.entrySet()) {
                 rows.put(uuids.get(entry.getKey()), LocalTime.MIN.plus(Duration.ofMinutes(entry.getValue())).toString().replace(":", "h") + "m");
             }
 
             table.setValues(rows.entrySet()
                     .stream()
-                    .map(e -> new String[]{e.getKey(),e.getValue()})
+                    .map(e -> new String[]{e.getKey(), e.getValue()})
                     .toArray(String[][]::new));
 
             builder.addEmbed(new EmbedBuilder()
@@ -141,11 +159,11 @@ TO BE RELEASED ON WEDNESDAY (enough data collected)
             throw new RuntimeException(e);
         }
 
-        for(JsonElement player : guild.getAsJsonArray("members")){
+        for (JsonElement player : guild.getAsJsonArray("members")) {
             uuids.put(UUID.fromString(player.getAsJsonObject().get("uuid").getAsString()), player.getAsJsonObject().get("name").getAsString());
         }
 
-        return  uuids;
+        return uuids;
     }
 
     private static <K, V> List<Map<K, V>> splitMap(Map<K, V> map, int size) {
@@ -165,7 +183,6 @@ TO BE RELEASED ON WEDNESDAY (enough data collected)
         }
         return result;
     }
-
 
 
 }
