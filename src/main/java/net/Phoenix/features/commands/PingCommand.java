@@ -1,7 +1,11 @@
 package net.Phoenix.features.commands;
 
 import net.Phoenix.utilities.annotations.BridgeCommand;
+import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.IPermissionHolder;
 import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction;
+
+import java.util.EnumSet;
 
 @BridgeCommand(name = "ping",
         description = "Get the bot's ping"

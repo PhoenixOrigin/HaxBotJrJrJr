@@ -31,7 +31,10 @@ import java.util.stream.Collectors;
                         description = "The guild to extract activity for :D"),
                 @BridgeCommand.CommandOption(type = OptionType.INTEGER,
                         name = "time",
-                        description = "The time the player needs less than")
+                        description = "The time the player needs less than"),
+                @BridgeCommand.CommandOption(type = OptionType.INTEGER,
+                        name = "weeks",
+                        description = "The amount of weeks to test for")
         }
 )
 public class Activity {
@@ -40,61 +43,62 @@ public class Activity {
     @BridgeCommand.invoke
     public static void handleCommand(SlashCommandInteractionEvent event,
                                      @BridgeCommand.OptionValue(name = "guild") String guildName,
-                                     @BridgeCommand.OptionValue(name = "time") Integer time) {
+                                     @BridgeCommand.OptionValue(name = "time") Integer time,
+                                     @BridgeCommand.OptionValue(name="weeks") Integer weeks) {
         if (guildName == null) {
             guildName = "HackForums";
         }
         if (time == null) {
             time = 180;
         }
+        if (weeks == null) {
+            weeks = 2;
+        }
 
         HashMap<UUID, String> uuids = getGuildUUIDS(guildName);
-        /*
-        SELECT uuid, SUM(playtime) FROM playtime
-WHERE timestamp BETWEEN
-        date_trunc('week', NOW() - INTERVAL '1 week') + INTERVAL '1 day'
-    AND date_trunc('week', NOW()) + INTERVAL '1 day'
-  AND uuid = ANY(?)
-GROUP BY uuid;
-
-TO BE RELEASED ON WEDNESDAY (enough data collected)
-         */
         String sqlQuery = """
-                WITH week_list AS (
-                        SELECT generate_series(1, 4) AS week_number
-                ), weekly_playtime AS (
-                        SELECT
-                        uuid,
-                        week_number,
-                        SUM(playtime) AS total_playtime
-                        FROM
-                        playtime
-                            INNER JOIN week_list ON timestamp BETWEEN date_trunc('week', NOW() - INTERVAL '1 week' * week_number) + INTERVAL '1 day'
-                                 AND date_trunc('week', NOW() - INTERVAL '1 week' * (week_number - 1)) + INTERVAL '1 day'
-                        GROUP BY
+                with list as (
+                        select
                             uuid,
-                        week_number
+                            floor(extract(epoch from timestamp) / 604800) as week_num,
+                            sum(playtime) as playtime
+                        from
+                            playtime
+                        group by
+                            uuid,
+                            week_num
                 )
-                SELECT
+                select
                     uuid
-                FROM
-                    weekly_playtime
-                WHERE
-                    week_number <= (SELECT max(week_number) FROM week_list)
-                    AND total_playtime < 120
-                    AND uuid = ANY(?);
+                from
+                    list
+                group by
+                    uuid
+                having
+                    uuid not in (
+                        select
+                            uuid
+                        from
+                            list
+                        where
+                            week_num >= floor(extract(epoch from NOW()) / 604800) - ?
+                            and week_num != floor(extract(epoch from NOW()) / 604800)
+                        group by
+                            uuid
+                        having
+                            sum(case when playtime >= 120 then 1 end) > 0
+                        )
+                    and uuid in ?;
                 """;
 
         LinkedHashMap<UUID, Integer> map = new LinkedHashMap<>();
-
         try {
             PreparedStatement statement = Main.database.prepareStatement(sqlQuery);
-            statement.setArray(1, Main.database.createArrayOf("uuid", uuids.keySet().toArray()));
+            statement.setInt(1, weeks);
+            statement.setArray(2, Main.database.createArrayOf("uuid", uuids.keySet().toArray()));
             ResultSet set = statement.executeQuery();
             while (set.next()) {
-                UUID uuid = set.getObject(1, UUID.class);
-                int intValue = set.getInt(2);
-                map.put(uuid, intValue);
+                System.out.println(set.getObject(1, UUID.class));
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);

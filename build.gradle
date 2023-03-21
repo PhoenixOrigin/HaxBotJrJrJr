@@ -8,6 +8,9 @@ version '1.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
+    maven {
+        url 'https://jitpack.io'
+    }
 }
 
 dependencies {
@@ -20,6 +23,7 @@ dependencies {
     implementation 'ch.qos.logback:logback-classic:1.2.9'
     implementation group: 'org.postgresql', name: 'postgresql', version: '42.5.1'
     implementation 'org.reflections:reflections:0.10.2'
+    implementation 'com.github.walkyst:lavaplayer-fork:1.4.0'
 }
 
 test {

@@ -22,10 +22,11 @@ public class GuildMemberJoinFeature {
         long errorChannel = ConfigHandler.getConfigLong("error_channel");
         Image icon = null;
         try {
-            icon = ImageIO.read(event.getMember().getEffectiveAvatar().download(150).get());
+            icon = ImageIO.read(event.getMember().getEffectiveAvatar().download().get());
         } catch (InterruptedException | ExecutionException | IOException exception) {
             Utilities.printError(exception, errorChannel, event.getGuild());
         }
+        icon = icon.getScaledInstance(150, 150, Image.SCALE_DEFAULT);
         icon = Utilities.makeRoundedCorner(Utilities.toBufferedImage(icon), 250);
         Image background = null;
         try {
